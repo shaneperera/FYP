@@ -15,8 +15,8 @@ data_cat = ['train', 'valid']
 # Create function to create dictionary regarding pathway to specific study type, number of patients in study type and
 def get_study_data(study_type):
     """
-    Returns a dictionary, with keys 'train' and 'valid' and respective values as study level data frames, these data frames
-    contain three columns:
+    Returns a dictionary, with keys 'train' and 'valid' and respective values as study level data frames, these data
+    frames contain three columns:
          Path: Path directory to data
          Count: Total number of studies for that patient (eg. can have multiple positive or negative case)
          Label: 0 or 1 to represent positive classification or not
@@ -44,6 +44,7 @@ def get_study_data(study_type):
         patients = list(os.walk(base_directory))[0][1]
 
         # Each category (train/valid) will have 3 columns (the key is based on the path directory)
+        # NOTE: There is a unique index as well --> Entries are path,count,label
         study_data[category] = pd.DataFrame(columns=['Path', 'Count', 'Label'])
 
         # Populate the rows (path,count,label) of the pandas dataframe
@@ -54,19 +55,20 @@ def get_study_data(study_type):
             for study in os.listdir(base_directory + patient):
                 # Chance of study1_negative & study2_positive (for eg.)
                 path = base_directory + '/' + patient + '/' + study
-                label = study_label[study.split('_')[1]]  # Notation: study1_negative -> Splits --> Choose +ve or -ve
+                label = study_label[study.split('_')[1]]  # Notation: study1_negative -> Splits --> Choose term after _
                 study_data[category].loc[i] = [path, len(os.listdir(path)), label]  # add new row to data frame
+                # .loc gets rows from particular labels (eg. patient number)
                 i += 1
     return study_data
 
 
 class ImageDataset(Dataset):
     """Training dataset."""
-
+    # This class will use the dictionary defined above (study_data) to feed an image into the network
     def __init__(self, df, transform=None):
         """
         Args:
-            df = Pandas data frame with image path and labels (pd.DataFrame)
+            df = Pandas data frame with image path,count and labels (pd.DataFrame)
             transform (callable, optional): Optional transform to be applied on a sample x-ray.
         """
 
@@ -78,41 +80,65 @@ class ImageDataset(Dataset):
         return len(self.df)
 
     def __getitem__(self, idx):
-        # Returns an element based on the index (idx)
+        # Returns an image based on the index (idx) in the pandas dataframe
+        # Pandas dataframe has notation: Path, Count, Label
         study_path = self.df.iloc[idx, 0]
+        # iloc -> Identifies which rows (idx) and which columns (0)
+
+        # Find the total number of studies for the patient
         count = self.df.iloc[idx, 1]
-        images = []
+
+        # Create a list of all the images
+        # Tuple --> ()
+        images = []  # Originally a list --> []
         for i in range(count):
+            # Notation: image1 OR image2
+            # Indexing starts at 0 --> Images are indexed from 1 onwards
             image = pil_loader(study_path + 'image%s.png' % (i + 1))
+
+            # .extend --> a = [1,2,3,4,5,6]
+            # .append --> a = [1,2,3,[4,5,6]]
+            # Transform the original image into standard notation --> All images will have the same normalisation as
+            # ImageNet
+            # ONLY FEED THROUGH THE TRANSFORMED IMAGE --> Images starts off as an empty list
             images.append(self.transform(image))
+
         images = torch.stack(images)
         label = self.df.iloc[idx, 2]
+
+        # Create a dictionary which holds all the transformed images in a single list (original isn't fed into dict)
+        # Label --> Classification of positive or negative
         sample = {'images': images, 'label': label}
         return sample
 
-    def get_dataloaders(self, batch_size=8, study_level=False):
-        """
-        Returns dataloader pipeline with data augmentation
-        """
 
-        data_transforms = {
-            'train': transforms.Compose([
-                transforms.Resize((224, 224)),
-                transforms.RandomHorizontalFlip(),
-                transforms.RandomRotation(10),
-                transforms.ToTensor(),
-                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-            ]),
-            'valid': transforms.Compose([
-                transforms.Resize((224, 224)),
-                transforms.ToTensor(),
-                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-            ]),
-        }
-        image_datasets = {x: ImageDataset(self[x], transform=data_transforms[x]) for x in data_cat}
-        dataloaders = {x: DataLoader(image_datasets[x], batch_size=batch_size, shuffle=True, num_workers=4) for x in
-                       data_cat}
-        return dataloaders
+def get_dataloaders(self, batch_size=8):
+    """
+    Returns dataloader pipeline with data augmentation
+    """
 
-    if __name__ == 'main':
-        pass
+    data_transforms = {
+        'train': transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(10),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ]),
+        'valid': transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ]),
+    }
+    # For each image in the category apply the same transformations
+    image_datasets = {x: ImageDataset(self[x], transform=data_transforms[x]) for x in data_cat}
+
+    # Load in batches of 8 images into the Neural Network
+    dataloaders = {x: DataLoader(image_datasets[x], batch_size=batch_size, shuffle=True, num_workers=4) for x in
+                   data_cat}
+    return dataloaders
+
+
+if __name__ == 'main':  # When this is run alone --> Should return null operation --> Must be imported in main fnc
+    pass
