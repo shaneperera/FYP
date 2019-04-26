@@ -94,6 +94,7 @@ class ImageDataset(Dataset):
         for i in range(count):
             # Notation: image1 OR image2
             # Indexing starts at 0 --> Images are indexed from 1 onwards
+            # pil_loader --> Opens the path and reads in the image in that location
             image = pil_loader(study_path + 'image%s.png' % (i + 1))
 
             # .extend --> a = [1,2,3,4,5,6]
