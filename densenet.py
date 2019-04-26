@@ -3,13 +3,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.model_zoo as model_zoo
 from collections import OrderedDict
-from torchvision.models import densenet169
 
 __all__ = ['DenseNet', 'densenet169']
 
 model_urls = {
     'densenet169': 'https://download.pytorch.org/models/densenet169-b2777c0a.pth',
 }
+
 
 def densenet169(pretrained=False, **kwargs):
     r"""Densenet-169 model from
@@ -18,7 +18,7 @@ def densenet169(pretrained=False, **kwargs):
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
 
-    # Main.py will call this function which uses our instantiation of the DenseNet model
+    # Main.py will call this function which uses our instantiation of the DenseNet model (Not Py torch version)
     model = DenseNet(num_init_features=64, growth_rate=32, block_config=(6, 12, 32, 32),
                      **kwargs)
     if pretrained:
@@ -44,7 +44,7 @@ class _DenseLayer(nn.Sequential):
         new_features = super(_DenseLayer, self).forward(x)
         if self.drop_rate > 0:
             new_features = F.dropout(new_features, p=self.drop_rate, training=self.training)
-        return torch.cat([x, new_features], 1)
+        return torch.cat((x, new_features), 1)  # Concatenated horizontally
 
 
 class _DenseBlock(nn.Sequential):
@@ -107,17 +107,15 @@ class DenseNet(nn.Module):
         self.features.add_module('norm5', nn.BatchNorm2d(num_features))
 
         # Linear layer
-        # self.classifier = nn.Linear(num_features, 1000)
-        # self.fc = nn.Linear(1000, 1)
-
+        # ImageNet uses 1000 classifications --> Change this
         # We have only a single classification (X-rays)
         # Reshape the final layer to have the same number of inputs as before
-        self.fc = nn.Linear(num_features, 1)
+        self.fc = nn.Linear(num_features, num_classes)
 
         # Official init from torch repo.
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal(m.weight.data)
+                nn.init.kaiming_normal_(m.weight.data)
             elif isinstance(m, nn.BatchNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
@@ -129,6 +127,6 @@ class DenseNet(nn.Module):
         features = self.features(x)
         out = F.relu(features, inplace=True)
         out = F.avg_pool2d(out, kernel_size=7, stride=1).view(features.size(0), -1)
-        # Change the final layer to Sigmoid (Probability function)
+        # Change the final fully connected layer to Sigmoid (Probability function)
         out = F.sigmoid(self.fc(out))
         return out
