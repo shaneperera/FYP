@@ -22,7 +22,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
     best_acc = 0.0
 
     # Store the cost & accuracy per epoch
-    # Costs = [Train costs, Valid costs]
+    # Each is a dictionary with keys valid and train --> List is defined to store the values for each epoch
     costs = {x: [] for x in data_cat}  # for storing costs per epoch
     accs = {x: [] for x in data_cat}  # for storing accuracies per epoch
 
@@ -88,7 +88,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                 labels = Variable(labels.cuda())
 
                 # zero the parameter gradients --> Why? Back propagation accumulates gradients, and you don't want
-                # to mix up gradients between minibatches
+                # to mix up gradients between mini batches
                 optimizer.zero_grad()
 
                 # Forward propagation (find output)
@@ -104,42 +104,69 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                 loss = criterion(outputs, labels, phase)
                 running_loss += loss.data[0]
 
+                # Why do we back propagate here? We want to recreate the image to determine the spatial frequency
+                # features
                 # backward propagation + optimize only if in training phase
                 if phase == 'train':
                     loss.backward()
                     optimizer.step()
 
-                # statistics
-                preds = (outputs.data > 0.5).type(torch.cuda.FloatTensor)
+                # NOTE: Variable is a wrapper and has multiple components --> We only need to access the data component
+                # Use .detach to access the data for Variables
+                # Preds = Prediction of the classification --> Will be between 0 and 1 --> However we want it above 0.5
+                # Convert the tensor from CPU to GPU to decrease run time
+                # Statistics
+                # Outputs is a tensor (array) --> There should only be a single value
+                preds = (outputs[0] > 0.5).type(torch.cuda.FloatTensor)
                 running_corrects += torch.sum(preds == labels.data)
                 confusion_matrix[phase].add(preds, labels.data)
+
+            # Calculate the loss and accuracy
             epoch_loss = running_loss / dataset_sizes[phase]
             epoch_acc = running_corrects / dataset_sizes[phase]
+
+            # Append onto the empty lists
             costs[phase].append(epoch_loss)
             accs[phase].append(epoch_acc)
+
+            # Print the loss & Accuracy for each epoch
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                 phase, epoch_loss, epoch_acc))
             print('Confusion Meter:\n', confusion_matrix[phase].value())
+
             # deep copy the model
             if phase == 'valid':
                 scheduler.step(epoch_loss)
+                # If the accuracy of current epoch is better than previous epoch, make a replica of the weights
                 if epoch_acc > best_acc:
                     best_acc = epoch_acc
                     best_model_wts = copy.deepcopy(model.state_dict())
+
+        # Determine the time it has taken to run the epoch
         time_elapsed = time.time() - since
         print('Time elapsed: {:.0f}m {:.0f}s'.format(
             time_elapsed // 60, time_elapsed % 60))
         print()
+
+    # All the epochs have completed (training phase complete) -> This is how long it took the training phase to complete
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(
         time_elapsed // 60, time_elapsed % 60))
+
+    # Print the best accuracy
     print('Best valid Acc: {:4f}'.format(best_acc))
+
+    # Plot the costs and accuracy vs epoch
+    # NOTE: costs and accs is a dictionary with keys 'valid' and 'train' --> I have defined a list for each of them
     plot_training(costs, accs)
+
     # load best model weights
     model.load_state_dict(best_model_wts)
     return model
 
 
+# Up until now, we have only calculated the loss and accuracy for each epoch individually for either valid and train
+# Now find the total acc, loss and confusion meter for ALL the epochs in the valid and train set
 def get_metrics(model, criterion, dataloaders, dataset_sizes, phase='valid'):
     """
     Loops over phase (train or valid) set to determine acc, loss and
@@ -150,18 +177,20 @@ def get_metrics(model, criterion, dataloaders, dataset_sizes, phase='valid'):
     running_corrects = 0
     for i, data in enumerate(dataloaders[phase]):
         print(i, end='\r')
+        # data is a dictionary with keys 'label' and 'images' --> Check output of ImageDataset class
         labels = data['label'].type(torch.Tensor)
         inputs = data['images'][0]
         # wrap them in Variable
-        #  inputs = Variable(inputs.cuda())
-        #  labels = Variable(labels.cuda())
-        # forward
+        inputs = Variable(inputs.cuda())
+        labels = Variable(labels.cuda())
+        # forward propagation
+        # Find the prediction of the classification
         outputs = model(inputs)
         outputs = torch.mean(outputs)
         loss = criterion(outputs, labels, phase)
         # statistics
         running_loss += loss.data[0] * inputs.size(0)
-        preds = (outputs.data > 0.5).type(torch.cuda.FloatTensor)
+        preds = (outputs[0] > 0.5).type(torch.cuda.FloatTensor)
         running_corrects += torch.sum(preds == labels.data)
         confusion_matrix.add(preds, labels.data)
 
