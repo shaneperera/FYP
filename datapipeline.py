@@ -113,7 +113,7 @@ class ImageDataset(Dataset):
         return sample
 
 
-def get_dataloaders(self, batch_size=8):
+def get_dataloaders(data, batch_size):
     """
     Returns dataloader pipeline with data augmentation
     """
@@ -133,7 +133,7 @@ def get_dataloaders(self, batch_size=8):
         ]),
     }
     # For each image in the category apply the same transformations
-    image_datasets = {x: ImageDataset(self[x], transform=data_transforms[x]) for x in data_cat}
+    image_datasets = {x: ImageDataset(data[x], transform=data_transforms[x]) for x in data_cat}
 
     # Load in batches of 8 images into the Neural Network
     dataloaders = {x: DataLoader(image_datasets[x], batch_size=batch_size, shuffle=True, num_workers=4) for x in
