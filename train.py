@@ -92,11 +92,12 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                 optimizer.zero_grad()
 
                 # Forward propagation (find output)
-                # When you feed the images into the model, it will yield a probability of the clasification
+                # When you feed the images into the model, it will yield a probability of the classification
                 outputs = model(inputs)
 
                 # Find the average of the probability of the classification
-                outputs = torch.mean(outputs)
+                # We comment it out because we need tensor for torch.max operation
+                # outputs = torch.mean(outputs)
 
                 # Calculate the LOSS (Error) of the classification
                 # Creates a criterion that measures the mean absolute error (MAE) between each element in
@@ -117,7 +118,8 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                 # Convert the tensor from CPU to GPU to decrease run time
                 # Statistics
                 # Outputs is a tensor (array) --> There should only be a single value
-                preds = (outputs[0] > 0.5).type(torch.cuda.FloatTensor)
+                preds = torch.max(outputs.data, 1)
+                # preds = (outputs[0] > 0.5).type(torch.cuda.FloatTensor)
                 running_corrects += torch.sum(preds == labels.data)
                 confusion_matrix[phase].add(preds, labels.data)
 
@@ -185,12 +187,17 @@ def get_metrics(model, criterion, dataloaders, dataset_sizes, phase='valid'):
         labels = Variable(labels.cuda())
         # forward propagation
         # Find the prediction of the classification
+
+        # Outputs a tensor corresponding to each epoch
         outputs = model(inputs)
-        outputs = torch.mean(outputs)
+        # outputs = torch.mean(outputs)
         loss = criterion(outputs, labels, phase)
         # statistics
         running_loss += loss.data[0] * inputs.size(0)
-        preds = (outputs[0] > 0.5).type(torch.cuda.FloatTensor)
+
+        # preds = (outputs.data > 0.5).type(torch.Tensor)
+        preds = torch.max(outputs.data, 1)
+
         running_corrects += torch.sum(preds == labels.data)
         confusion_matrix.add(preds, labels.data)
 
