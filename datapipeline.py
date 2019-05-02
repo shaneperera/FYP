@@ -36,7 +36,7 @@ def get_study_data(study_type):
 
         # Locate the MURA dataset
         # Include directory extension --> Special type of string formatting
-        base_directory = 'C:/Users/shann/Documents/FYP/MURA-v1.1/%s/%s' % (category, study_type)
+        base_directory = 'MURA-v1.1/%s/%s/' % (category, study_type)
 
         # List of all the patients inside the study level
         # os.walk --> Generates file names in the directory --> When you enter XR_ELBOW --> Will print directory first
@@ -54,7 +54,7 @@ def get_study_data(study_type):
             # (difference with os.walk is that you can't specify the direction)
             for study in os.listdir(base_directory + patient):
                 # Chance of study1_negative & study2_positive (for eg.)
-                path = base_directory + '/' + patient + '/' + study
+                path = base_directory + patient + '/' + study + '/'
                 label = study_label[study.split('_')[1]]  # Notation: study1_negative -> Splits --> Choose term after _
                 study_data[category].loc[i] = [path, len(os.listdir(path)), label]  # add new row to data frame
                 # .loc gets rows from particular labels (eg. patient number)
@@ -103,7 +103,6 @@ class ImageDataset(Dataset):
             # ImageNet
             # ONLY FEED THROUGH THE TRANSFORMED IMAGE --> Images starts off as an empty list
             images.append(self.transform(image))
-
         images = torch.stack(images)
         label = self.df.iloc[idx, 2]
 
