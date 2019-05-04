@@ -11,7 +11,7 @@ model_urls = {
 }
 
 
-def densenet169(pretrained=False, **kwargs):
+def densenet169(pretrained, **kwargs):
     r"""Densenet-169 model from
     `"Densely Connected Convolutional Networks" <https://arxiv.org/pdf/1608.06993.pdf>`_
     Args:
@@ -130,3 +130,4 @@ class DenseNet(nn.Module):
         # Change the final fully connected layer to Sigmoid (Probability function)
         out = F.sigmoid(self.fc(out))
         return out
+
