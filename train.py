@@ -110,7 +110,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                 # features
                 # backward propagation + optimize only if in training phase
                 if phase == 'train':
-                    loss.backward()
+                    loss.sum().backward()
                     optimizer.step()
 
                 # NOTE: Variable is a wrapper and has multiple components --> We only need to access the data component
@@ -119,8 +119,8 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                 # Convert the tensor from CPU to GPU to decrease run time
                 # Statistics
                 # Outputs is a tensor (array) --> There should only be a single value
-                preds = torch.max(outputs.data, 1)
-                # preds = (outputs[0] > 0.5).type(torch.cuda.FloatTensor)
+                # preds = torch.max(outputs.data, 1)
+                preds = (outputs[0] > 0.5).type(torch.cuda.FloatTensor)
                 running_corrects += torch.sum(preds == labels.data)
                 confusion_matrix[phase].add(preds, labels.data)
 
@@ -197,8 +197,8 @@ def get_metrics(model, criterion, dataloaders, dataset_sizes, phase='valid'):
         # statistics
         running_loss += loss.data[0] * inputs.size(0)
 
-        # preds = (outputs.data > 0.5).type(torch.Tensor)
-        preds = torch.max(outputs.data, 1)
+        preds = (outputs.data > 0.5).type(torch.cuda.FloatTensor)
+        # preds = torch.max(outputs.data, 1)
 
         running_corrects += torch.sum(preds == labels.data)
         confusion_matrix.add(preds, labels.data)
