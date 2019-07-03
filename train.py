@@ -5,8 +5,6 @@ from torchnet import meter
 from torch.autograd import Variable
 from utils import plot_training
 
-####test 3
-
 data_cat = ['train', 'valid']  # data categories
 
 
