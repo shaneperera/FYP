@@ -7,8 +7,6 @@ from utils import plot_training
 
 data_cat = ['train', 'valid']  # data categories
 
-#hi
-
 def train_model(model, criterion, optimizer, dataloaders, scheduler,
                 dataset_sizes, num_epochs):
     # In order to determine how long each epoch takes to travel in the network,
