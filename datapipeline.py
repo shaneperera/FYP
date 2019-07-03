@@ -59,6 +59,8 @@ def get_study_data(study_type):
                 study_data[category].loc[i] = [path, len(os.listdir(path)), label]  # add new row to data frame
                 # .loc gets rows from particular labels (eg. patient number)
                 i += 1
+
+
     return study_data
 
 
@@ -106,12 +108,13 @@ class ImageDataset(Dataset):
             # ONLY FEED THROUGH THE TRANSFORMED IMAGE --> Images starts off as an empty list
             images.append(self.transform(image))
         images = torch.stack(images)
-        # print(images.shape)
+        print(images.shape)
         label = self.df.iloc[idx, 2]
 
         # Create a dictionary which holds all the transformed images in a single list (original isn't fed into dict)
         # Label --> Classification of positive or negative
         sample = {'images': images, 'label': label}
+
         return sample
 
 

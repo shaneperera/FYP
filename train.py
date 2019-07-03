@@ -10,7 +10,7 @@ data_cat = ['train', 'valid']  # data categories
 #hi
 
 def train_model(model, criterion, optimizer, dataloaders, scheduler,
-                dataset_sizes, num_epochs):
+                dataset_sizes, count, num_epochs):
     # In order to determine how long each epoch takes to travel in the network,
     # measure the time since the beginning of the first epoch
     since = time.time()
@@ -64,7 +64,8 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
             model.train(phase == 'train')
             running_loss = 0.0
             running_corrects = 0
-
+            study_count = count[phase] # Number of images per study (you need to find max of this to pad to this value)
+            k = 0 #iterater for the count array
             # Iterate over data
             # Enumerate --> Loop over something and have an automatic counter
             # Eg. Enumerate(dataloaders['train'],2) --> Start at the second index and begin counting
@@ -79,10 +80,11 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                     # Start indexing from the first image
                     # index 0 looks into the study of the batch
                     # inputs = data['images'][j]
-                    inputs = study
-
+                    inputs = study[0:study_count[k]-1]
+                    k += 1
                     # Convert the label (0 or 1) to an integer Tensor
                     labels = data['label'][j].type(torch.Tensor)
+
 
                     # Wrap them in Variables
                     # NOTE: A variable forms a thin wrapper around a tensor object, its gradients,
