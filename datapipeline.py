@@ -36,7 +36,7 @@ def get_study_data(study_type):
 
         # Locate the MURA dataset
         # Include directory extension --> Special type of string formatting
-        base_directory = 'MURA-v1.1/%s/%s/' % (category, study_type)
+        base_directory = 'D:\Desktop\FYP\MURA-v1.1/%s/%s/' % (category, study_type)
 
         # List of all the patients inside the study level
         # os.walk --> Generates file names in the directory --> When you enter XR_ELBOW --> Will print directory first
@@ -97,6 +97,8 @@ class ImageDataset(Dataset):
             # pil_loader --> Opens the path and reads in the image in that location
             image = pil_loader(study_path + 'image%s.png' % (i + 1))
 
+            # image = image.convert('RGB')
+
             # .extend --> a = [1,2,3,4,5,6]
             # .append --> a = [1,2,3,[4,5,6]]
             # Transform the original image into standard notation --> All images will have the same normalisation as
@@ -104,6 +106,7 @@ class ImageDataset(Dataset):
             # ONLY FEED THROUGH THE TRANSFORMED IMAGE --> Images starts off as an empty list
             images.append(self.transform(image))
         images = torch.stack(images)
+        # print(images.shape)
         label = self.df.iloc[idx, 2]
 
         # Create a dictionary which holds all the transformed images in a single list (original isn't fed into dict)

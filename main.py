@@ -12,6 +12,7 @@ if __name__ == '__main__':
     # #### Create dataloaders pipeline
     data_cat = ['train', 'valid']  # data categories
     dataloaders = get_dataloaders(study_data, batch_size=1)
+
     dataset_sizes = {x: len(study_data[x]) for x in data_cat}
 
     # #### Build model
@@ -55,6 +56,8 @@ if __name__ == '__main__':
     model = train_model(model, criterion, optimizer, dataloaders, scheduler, dataset_sizes, num_epochs=5)
 
     # Pytorch automatically converts the model weights into a pickle file
-    torch.save(model.state_dict(), 'models/model.pth')
+
+
+    torch.save(model.state_dict(), 'model.pth')
 
     get_metrics(model, criterion, dataloaders, dataset_sizes)

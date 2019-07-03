@@ -5,6 +5,8 @@ from torchnet import meter
 from torch.autograd import Variable
 from utils import plot_training
 
+####test
+
 data_cat = ['train', 'valid']  # data categories
 
 
@@ -72,61 +74,79 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                 # Print the iteration ( '\r' --> Overwrite the existing iteration each time)
                 print(i, end='\r')
 
-                # Class ImageDataset returns sample, which is a dictionary that has keys 'images' and 'labels'
-                # 'images' --> Stores the transformed images (there can be multiple from each study)
-                # Start indexing from the first image
-                inputs = data['images'][0]
+                for j, study in enumerate(data['images']):
+                    # Class ImageDataset returns sample, which is a dictionary that has keys 'images' and 'labels'
+                    # 'images' --> Stores the transformed images (there can be multiple from each study)
+                    # Start indexing from the first image
+                    # index 0 looks into the study of the batch
+                    # inputs = data['images'][j]
+                    inputs = study
 
-                # Convert the label (0 or 1) to an integer Tensor
-                labels = data['label'].type(torch.Tensor)
+                    # Convert the label (0 or 1) to an integer Tensor
+                    labels = data['label'][j].type(torch.Tensor)
 
-                # Wrap them in Variables
-                # NOTE: A variable forms a thin wrapper around a tensor object, its gradients,
-                # and a reference to the function that created it.
-                # The loss function should give a scalar value --> Optimiser will use scalar value and determine
-                # next epoch's ideal weights
-                inputs = Variable(inputs.cuda())
-                labels = Variable(labels.cuda())
+                    # Wrap them in Variables
+                    # NOTE: A variable forms a thin wrapper around a tensor object, its gradients,
+                    # and a reference to the function that created it.
+                    # The loss function should give a scalar value --> Optimiser will use scalar value and determine
+                    # next epoch's ideal weights
+                    # print('labels pre', labels.shape)
+                    inputs = Variable(inputs.cuda())
+                    labels = Variable(labels.cuda())
 
-                # zero the parameter gradients --> Why? Back propagation accumulates gradients, and you don't want
-                # to mix up gradients between mini batches
-                optimizer.zero_grad()
+                    # zero the parameter gradients --> Why? Back propagation accumulates gradients, and you don't want
+                    # to mix up gradients between mini batches
+                    optimizer.zero_grad()
 
-                # Forward propagation (find output)
-                # When you feed the images into the model, it will yield a probability of the classification
-                outputs = model(inputs)
+                    # Forward propagation (find output)
+                    # When you feed the images into the model, it will yield a probability of the classification
+                    outputs = model(inputs)
+                    # Find the average of the probability of the classification
+                    # We comment it out because we need tensor for torch.max operation
+                    outputs = torch.mean(outputs)
+                    # Calculate the LOSS (Error) of the classification
+                    # Creates a criterion that measures the mean absolute error (MAE) between each element in
+                    # the output and target (labels) based on whether it is for train or validation
+                    loss = criterion(outputs, labels, phase)
+                    running_loss += loss.data[0]
 
-                # Find the average of the probability of the classification
-                # We comment it out because we need tensor for torch.max operation
-                # outputs = torch.mean(outputs)
+                    # Why do we back propagate here? We want to recreate the image to determine the spatial frequency
+                    # features
+                    # backward propagation + optimize only if in training phase
+                    if phase == 'train':
+                        loss.sum().backward()
+                        optimizer.step()
 
-                # Calculate the LOSS (Error) of the classification
-                # Creates a criterion that measures the mean absolute error (MAE) between each element in
-                # the output and target (labels) based on whether it is for train or validation
-                loss = criterion(outputs, labels, phase)
-                running_loss += loss.data[0]
+                    # NOTE: Variable is a wrapper and has multiple components --> We only need to access the data component
+                    # Use .detach to access the data for Variables
+                    # Preds = Prediction of the classification --> Will be between 0 and 1 --> However we want it above 0.5
+                    # Convert the tensor from CPU to GPU to decrease run time
+                    # Statistics
+                    # Outputs is a tensor (array) --> There should only be a single value
+                    # preds = torch.max(outputs.data, 1)
+                    preds = (outputs > 0.5).type(torch.cuda.FloatTensor)
+                    running_corrects += torch.sum(torch.eq(preds, labels.data))
+                    #confusion_matrix[phase].add(preds, labels.data)
 
-                # Why do we back propagate here? We want to recreate the image to determine the spatial frequency
-                # features
-                # backward propagation + optimize only if in training phase
-                if phase == 'train':
-                    loss.sum().backward()
-                    optimizer.step()
-
-                # NOTE: Variable is a wrapper and has multiple components --> We only need to access the data component
-                # Use .detach to access the data for Variables
-                # Preds = Prediction of the classification --> Will be between 0 and 1 --> However we want it above 0.5
-                # Convert the tensor from CPU to GPU to decrease run time
-                # Statistics
-                # Outputs is a tensor (array) --> There should only be a single value
-                # preds = torch.max(outputs.data, 1)
-                preds = (outputs[0] > 0.5).type(torch.cuda.FloatTensor)
-                running_corrects += torch.sum(preds == labels.data)
-                confusion_matrix[phase].add(preds, labels.data)
+                    # print('inputs[0]:', inputs.shape)
+                    # print('inputs:', data['images'].shape)
+                    # print('labels:', labels.shape)
+                    # print('labels.data:', labels.data.shape)
+                    # print('labels.data[0]:', labels.data.shape)
+                    # print('outputs:', outputs.shape)
+                    # print('preds', preds)
+                    # print('labels.data', labels.data)
+                    # print('dataset_size', dataset_sizes)
+                    # print('eq', torch.sum(torch.eq(preds, labels.data)))
+                    # print('run correct', running_corrects)
 
             # Calculate the loss and accuracy
-            epoch_loss = running_loss / dataset_sizes[phase]
-            epoch_acc = running_corrects / dataset_sizes[phase]
+            epoch_loss = running_loss.item() / dataset_sizes[phase]
+            epoch_acc = running_corrects.item() / dataset_sizes[phase]
+
+            # print('acc', epoch_acc)
+            # print('acc2', epoch_acc.item())
+            # print('acc3', running_corrects.item()/dataset_sizes[phase]) this one works
 
             # Append onto the empty lists
             costs[phase].append(epoch_loss)
@@ -135,7 +155,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
             # Print the loss & Accuracy for each epoch
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                 phase, epoch_loss, epoch_acc))
-            print('Confusion Meter:\n', confusion_matrix[phase].value())
+            #print('Confusion Meter:\n', confusion_matrix[phase].value())
 
             # deep copy the model
             if phase == 'valid':
@@ -195,15 +215,17 @@ def get_metrics(model, criterion, dataloaders, dataset_sizes, phase='valid'):
         # outputs = torch.mean(outputs)
         loss = criterion(outputs, labels, phase)
         # statistics
-        running_loss += loss.data[0] * inputs.size(0)
+
+        running_loss += loss.data[0]
 
         preds = (outputs.data > 0.5).type(torch.cuda.FloatTensor)
         # preds = torch.max(outputs.data, 1)
 
-        running_corrects += torch.sum(preds == labels.data)
-        confusion_matrix.add(preds, labels.data)
+        running_corrects += torch.sum(torch.eq(preds,labels.data))
+        #confusion_matrix.add(preds, labels.data)
 
-    loss = running_loss / dataset_sizes[phase]
-    acc = running_corrects / dataset_sizes[phase]
+    loss = running_loss.item() / dataset_sizes[phase]
+    acc = running_corrects.item() / dataset_sizes[phase]
+
     print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, loss, acc))
-    print('Confusion Meter:\n', confusion_matrix.value())
+    #print('Confusion Meter:\n', confusion_matrix.value())
