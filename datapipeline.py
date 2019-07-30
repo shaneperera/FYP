@@ -40,7 +40,7 @@ def get_study_data(study_type):
 
         # List of all the patients inside the study level
         # os.walk --> Generates file names in the directory --> When you enter XR_ELBOW --> Will print directory first
-        # [0][1] Indexes the first element, but second element of the first element
+        # [0][1] Indexes the first element, but second element of the first element1
         patients = list(os.walk(base_directory))[0][1]
 
         # Each category (train/valid) will have 3 columns (the key is based on the path directory)
@@ -123,7 +123,6 @@ def my_collate(batch):
     data = [item['images'] for item in batch]  # just form a list of tensor
     target = [item['label'] for item in batch]
     target = torch.LongTensor(target)
-    print([data, target])
     return [data, target]
 
 def get_dataloaders(data, batch_size):

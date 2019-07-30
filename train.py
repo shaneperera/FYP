@@ -74,7 +74,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                 # Print the iteration ( '\r' --> Overwrite the existing iteration each time)
                 print(i, end='\r')
 
-                for j, study in enumerate(data['images']):
+                for j, study in enumerate(data[0]):
                     # Class ImageDataset returns sample, which is a dictionary that has keys 'images' and 'labels'
                     # 'images' --> Stores the transformed images (there can be multiple from each study)
                     # Start indexing from the first image
@@ -83,7 +83,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                     inputs = study[0:study_count[k]-1]
                     k += 1
                     # Convert the label (0 or 1) to an integer Tensor
-                    labels = data['label'][j].type(torch.Tensor)
+                    labels = data[1][j].type(torch.Tensor)
 
 
                     # Wrap them in Variables
@@ -203,8 +203,8 @@ def get_metrics(model, criterion, dataloaders, dataset_sizes, phase='valid'):
     for i, data in enumerate(dataloaders[phase]):
         print(i, end='\r')
         # data is a dictionary with keys 'label' and 'images' --> Check output of ImageDataset class
-        labels = data['label'].type(torch.Tensor)
-        inputs = data['images'][0]
+        labels = data[1].type(torch.Tensor)
+        inputs = data[0][0]
         # wrap them in Variable
         inputs = Variable(inputs.cuda())
         labels = Variable(labels.cuda())
