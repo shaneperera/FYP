@@ -13,8 +13,8 @@ if __name__ == '__main__':
     # #### Create dataloaders pipeline
     data_cat = ['train', 'valid']  # data categories
     count = {x:study_data[x]['Count'] for x in data_cat} # get count array for train and valid (solution for padding issue)
-    print(count)
-    dataloaders = get_dataloaders(study_data, batch_size=1)
+    #print(count)
+    dataloaders = get_dataloaders(study_data, batch_size=2)
 
     dataset_sizes = {x: len(study_data[x]) for x in data_cat}
 

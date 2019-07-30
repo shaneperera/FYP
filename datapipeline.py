@@ -108,7 +108,7 @@ class ImageDataset(Dataset):
             # ONLY FEED THROUGH THE TRANSFORMED IMAGE --> Images starts off as an empty list
             images.append(self.transform(image))
         images = torch.stack(images)
-        print(images.shape)
+        #print(images.shape)
         label = self.df.iloc[idx, 2]
 
         # Create a dictionary which holds all the transformed images in a single list (original isn't fed into dict)
@@ -117,6 +117,14 @@ class ImageDataset(Dataset):
 
         return sample
 
+def my_collate(batch):
+    #print(batch)
+    #print('done')
+    data = [item['images'] for item in batch]  # just form a list of tensor
+    target = [item['label'] for item in batch]
+    target = torch.LongTensor(target)
+    print([data, target])
+    return [data, target]
 
 def get_dataloaders(data, batch_size):
     """
@@ -141,7 +149,7 @@ def get_dataloaders(data, batch_size):
     image_datasets = {x: ImageDataset(data[x], transform=data_transforms[x]) for x in data_cat}
 
     # Load in batches of 8 images into the Neural Network
-    dataloaders = {x: DataLoader(image_datasets[x], batch_size=batch_size, shuffle=True, num_workers=4) for x in
+    dataloaders = {x: DataLoader(image_datasets[x], batch_size=batch_size, shuffle=True, num_workers=4, collate_fn = my_collate, pin_memory= True) for x in
                    data_cat}
     return dataloaders
 
