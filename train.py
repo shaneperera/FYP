@@ -80,8 +80,8 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                     # Start indexing from the first image
                     # index 0 looks into the study of the batch
                     # inputs = data['images'][j]
-                    inputs = study[0:study_count[k]-1]
-                    k += 1
+                    inputs = study #[0:study_count[k]-1]
+                    #k += 1
                     # Convert the label (0 or 1) to an integer Tensor
                     labels = data[1][j].type(torch.Tensor)
 
