@@ -118,9 +118,7 @@ class ImageDataset(Dataset):
         return sample
 
 def my_collate(batch):
-    #print(batch)
-    #print('done')
-    data = [item['images'] for item in batch]  # just form a list of tensor
+    data = [item['images'] for item in batch]  #  form a list of tensor
     target = [item['label'] for item in batch]
     target = torch.LongTensor(target)
     return [data, target]
@@ -148,7 +146,7 @@ def get_dataloaders(data, batch_size):
     image_datasets = {x: ImageDataset(data[x], transform=data_transforms[x]) for x in data_cat}
 
     # Load in batches of 8 images into the Neural Network
-    dataloaders = {x: DataLoader(image_datasets[x], batch_size=batch_size, shuffle=True, num_workers=4, collate_fn = my_collate, pin_memory= True) for x in
+    dataloaders = {x: DataLoader(image_datasets[x], batch_size=batch_size, shuffle=True, num_workers=4, collate_fn = my_collate) for x in
                    data_cat}
     return dataloaders
 

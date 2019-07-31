@@ -12,10 +12,7 @@ if __name__ == '__main__':
     study_data = get_study_data(study_type='XR_WRIST')
     # #### Create dataloaders pipeline
     data_cat = ['train', 'valid']  # data categories
-    count = {x:study_data[x]['Count'] for x in data_cat} # get count array for train and valid (solution for padding issue)
-    #print(count)
     dataloaders = get_dataloaders(study_data, batch_size=2)
-
     dataset_sizes = {x: len(study_data[x]) for x in data_cat}
 
     # #### Build model
@@ -56,11 +53,11 @@ if __name__ == '__main__':
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=1, verbose=True)
 
     # Train model
-    model = train_model(model, criterion, optimizer, dataloaders, scheduler, dataset_sizes,count, num_epochs=5)
+    model = train_model(model, criterion, optimizer, dataloaders, scheduler, dataset_sizes, num_epochs=5)
 
     # Pytorch automatically converts the model weights into a pickle file
 
 
     torch.save(model.state_dict(), 'model.pth')
 
-    get_metrics(model, criterion, dataloaders, dataset_sizes)
+   # get_metrics(model, criterion, dataloaders, dataset_sizes)

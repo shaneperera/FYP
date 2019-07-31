@@ -8,7 +8,7 @@ from utils import plot_training
 data_cat = ['train', 'valid']  # data categories
 
 def train_model(model, criterion, optimizer, dataloaders, scheduler,
-                dataset_sizes, count, num_epochs):
+                dataset_sizes, num_epochs):
     # In order to determine how long each epoch takes to travel in the network,
     # measure the time since the beginning of the first epoch
     since = time.time()
@@ -62,8 +62,6 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
             model.train(phase == 'train')
             running_loss = 0.0
             running_corrects = 0
-            study_count = count[phase] # Number of images per study (you need to find max of this to pad to this value)
-            k = 0 #iterater for the count array
             # Iterate over data
             # Enumerate --> Loop over something and have an automatic counter
             # Eg. Enumerate(dataloaders['train'],2) --> Start at the second index and begin counting
@@ -107,7 +105,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                     # Creates a criterion that measures the mean absolute error (MAE) between each element in
                     # the output and target (labels) based on whether it is for train or validation
                     loss = criterion(outputs, labels, phase)
-                    running_loss += loss.data[0]
+                    running_loss += loss
 
                     # Why do we back propagate here? We want to recreate the image to determine the spatial frequency
                     # features
@@ -201,6 +199,7 @@ def get_metrics(model, criterion, dataloaders, dataset_sizes, phase='valid'):
     for i, data in enumerate(dataloaders[phase]):
         print(i, end='\r')
         # data is a dictionary with keys 'label' and 'images' --> Check output of ImageDataset class
+
         labels = data[1].type(torch.Tensor)
         inputs = data[0][0]
         # wrap them in Variable
