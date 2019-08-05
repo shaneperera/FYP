@@ -12,7 +12,7 @@ if __name__ == '__main__':
     study_data = get_study_data(study_type='XR_WRIST')
     # #### Create dataloaders pipeline
     data_cat = ['train', 'valid']  # data categories
-    dataloaders = get_dataloaders(study_data, batch_size=2)
+    dataloaders = get_dataloaders(study_data, batch_size=8)
     dataset_sizes = {x: len(study_data[x]) for x in data_cat}
 
     # #### Build model
@@ -47,6 +47,7 @@ if __name__ == '__main__':
 
     model = densenet169(pretrained=True)
     model = model.cuda()
+    #cudnn.benchmark = True
 
     criterion = Loss(Wt1, Wt0)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)

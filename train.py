@@ -81,31 +81,49 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                     # Convert the label (0 or 1) to an integer Tensor
                     labels = data[1][j].type(torch.Tensor)
 
+                    if phase == 'valid':
+                        with torch.no_grad():
+                            inputs = Variable(inputs.cuda())
+                            labels = Variable(labels.cuda())
 
-                    # Wrap them in Variables
-                    # NOTE: A variable forms a thin wrapper around a tensor object, its gradients,
-                    # and a reference to the function that created it.
-                    # The loss function should give a scalar value --> Optimiser will use scalar value and determine
-                    # next epoch's ideal weights
-                    # print('labels pre', labels.shape)
-                    inputs = Variable(inputs.cuda())
-                    labels = Variable(labels.cuda())
+                            # zero the parameter gradients --> Why? Back propagation accumulates gradients, and you don't want
+                            # to mix up gradients between mini batches
+                            optimizer.zero_grad()
+                            # Forward propagation (find output)
+                            # When you feed the images into the model, it will yield a probability of the classification
+                            outputs = model(inputs)
+                            # Find the average of the probability of the classification
+                            # We comment it out because we need tensor for torch.max operation
+                            outputs = torch.mean(outputs)
+                            # Calculate the LOSS (Error) of the classification
+                            # Creates a criterion that measures the mean absolute error (MAE) between each element in
+                            # the output and target (labels) based on whether it is for train or validation
+                            loss = criterion(outputs, labels, phase)
+                            running_loss += loss
+                    else:
+                        # Wrap them in Variables
+                        # NOTE: A variable forms a thin wrapper around a tensor object, its gradients,
+                        # and a reference to the function that created it.
+                        # The loss function should give a scalar value --> Optimiser will use scalar value and determine
+                        # next epoch's ideal weights
+                        # print('labels pre', labels.shape)
+                        inputs = Variable(inputs.cuda())
+                        labels = Variable(labels.cuda())
 
-                    # zero the parameter gradients --> Why? Back propagation accumulates gradients, and you don't want
-                    # to mix up gradients between mini batches
-                    optimizer.zero_grad()
-
-                    # Forward propagation (find output)
-                    # When you feed the images into the model, it will yield a probability of the classification
-                    outputs = model(inputs)
-                    # Find the average of the probability of the classification
-                    # We comment it out because we need tensor for torch.max operation
-                    outputs = torch.mean(outputs)
-                    # Calculate the LOSS (Error) of the classification
-                    # Creates a criterion that measures the mean absolute error (MAE) between each element in
-                    # the output and target (labels) based on whether it is for train or validation
-                    loss = criterion(outputs, labels, phase)
-                    running_loss += loss
+                        # zero the parameter gradients --> Why? Back propagation accumulates gradients, and you don't want
+                        # to mix up gradients between mini batches
+                        optimizer.zero_grad()
+                        # Forward propagation (find output)
+                        # When you feed the images into the model, it will yield a probability of the classification
+                        outputs = model(inputs)
+                        # Find the average of the probability of the classification
+                        # We comment it out because we need tensor for torch.max operation
+                        outputs = torch.mean(outputs)
+                        # Calculate the LOSS (Error) of the classification
+                        # Creates a criterion that measures the mean absolute error (MAE) between each element in
+                        # the output and target (labels) based on whether it is for train or validation
+                        loss = criterion(outputs, labels, phase)
+                        running_loss += loss
 
                     # Why do we back propagate here? We want to recreate the image to determine the spatial frequency
                     # features
@@ -113,6 +131,8 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                     if phase == 'train':
                         loss.sum().backward()
                         optimizer.step()
+
+
 
                     # NOTE: Variable is a wrapper and has multiple components --> We only need to access the data component
                     # Use .detach to access the data for Variables
