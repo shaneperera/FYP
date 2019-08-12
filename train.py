@@ -76,8 +76,8 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                     # Start indexing from the first image
                     # index 0 looks into the study of the batch
                     # inputs = data['images'][j]
-                    inputs = study #[0:study_count[k]-1]
-                    #k += 1
+                    inputs = study  # [0:study_count[k]-1]
+                    # k += 1
                     # Convert the label (0 or 1) to an integer Tensor
                     labels = data[1][j].type(torch.Tensor)
 
@@ -99,7 +99,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                             # Creates a criterion that measures the mean absolute error (MAE) between each element in
                             # the output and target (labels) based on whether it is for train or validation
                             loss = criterion(outputs, labels, phase)
-                            running_loss += loss
+                            running_loss += loss.item()
                     else:
                         # Wrap them in Variables
                         # NOTE: A variable forms a thin wrapper around a tensor object, its gradients,
@@ -123,7 +123,11 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                         # Creates a criterion that measures the mean absolute error (MAE) between each element in
                         # the output and target (labels) based on whether it is for train or validation
                         loss = criterion(outputs, labels, phase)
-                        running_loss += loss
+                        running_loss += loss.item()
+                    if outputs <0.00001:
+                        print('inputs:',inputs)
+                    print('outputs:',outputs.item())
+                    print('loss:',loss.item())
 
                     # Why do we back propagate here? We want to recreate the image to determine the spatial frequency
                     # features
@@ -131,8 +135,6 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                     if phase == 'train':
                         loss.sum().backward()
                         optimizer.step()
-
-
 
                     # NOTE: Variable is a wrapper and has multiple components --> We only need to access the data component
                     # Use .detach to access the data for Variables
@@ -143,7 +145,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                     # preds = torch.max(outputs.data, 1)
                     preds = (outputs > 0.5).type(torch.cuda.FloatTensor)
                     running_corrects += torch.sum(torch.eq(preds, labels.data))
-                    #confusion_matrix[phase].add(preds, labels.data)
+                    # confusion_matrix[phase].add(preds, labels.data)
 
                     # print('inputs[0]:', inputs.shape)
                     # print('inputs:', data['images'].shape)
@@ -158,7 +160,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                     # print('run correct', running_corrects)
 
             # Calculate the loss and accuracy
-            epoch_loss = running_loss.item() / dataset_sizes[phase]
+            epoch_loss = running_loss / dataset_sizes[phase]
             epoch_acc = running_corrects.item() / dataset_sizes[phase]
 
             # print('acc', epoch_acc)
@@ -172,7 +174,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
             # Print the loss & Accuracy for each epoch
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                 phase, epoch_loss, epoch_acc))
-            #print('Confusion Meter:\n', confusion_matrix[phase].value())
+            # print('Confusion Meter:\n', confusion_matrix[phase].value())
 
             # deep copy the model
             if phase == 'valid':
@@ -239,11 +241,11 @@ def get_metrics(model, criterion, dataloaders, dataset_sizes, phase='valid'):
         preds = (outputs.data > 0.5).type(torch.cuda.FloatTensor)
         # preds = torch.max(outputs.data, 1)
 
-        running_corrects += torch.sum(torch.eq(preds,labels.data))
-        #confusion_matrix.add(preds, labels.data)
+        running_corrects += torch.sum(torch.eq(preds, labels.data))
+        # confusion_matrix.add(preds, labels.data)
 
     loss = running_loss.item() / dataset_sizes[phase]
     acc = running_corrects.item() / dataset_sizes[phase]
 
     print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, loss, acc))
-    #print('Confusion Meter:\n', confusion_matrix.value())
+    # print('Confusion Meter:\n', confusion_matrix.value())

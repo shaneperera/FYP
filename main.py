@@ -12,7 +12,7 @@ if __name__ == '__main__':
     study_data = get_study_data(study_type='XR_WRIST')
     # #### Create dataloaders pipeline
     data_cat = ['train', 'valid']  # data categories
-    dataloaders = get_dataloaders(study_data, batch_size=8)
+    dataloaders = get_dataloaders(study_data, batch_size=16)
     dataset_sizes = {x: len(study_data[x]) for x in data_cat}
 
     # #### Build model
