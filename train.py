@@ -122,9 +122,8 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                     running_loss += loss
                     running_corrects += torch.sum(torch.eq(preds, labels.data))
 
-                    # Select pred value
-                    preds = preds[0]
-                    labels = torch.tensor([labels])
+                    preds = preds[0] # Select inner tensor
+                    labels = torch.tensor([labels]) # Confusion matrix needs labels in a tensor
                     print('preds:', preds)
                     print('label:', labels)
                     confusion_matrix[phase].add(preds, labels)
