@@ -59,91 +59,79 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
             # gradient
             # NOTE: Smaller learning rates mean that you take a longer time to converge --> But you don't miss local
             # minima in your loss function --> Remember you want to find the local minimum as fast as possible
-            model.train(phase == 'train')
+            if phase == 'train':
+                model.train()  # Set model to training mode
+            else:
+                model.eval()  # Set model to evaluate mode
             running_loss = 0.0
             running_corrects = 0
-
             # Iterate over data
             # Enumerate --> Loop over something and have an automatic counter
             # Eg. Enumerate(dataloaders['train'],2) --> Start at the second index and begin counting
 
             for i, data in enumerate(dataloaders[phase]):
-                # Print the iteration ( '\r' --> Overwrite the existing iteration each time)
                 print(i, end='\r')
 
-                for j, study in enumerate(data['images']):
+                for j, image in enumerate(data['images']):  # Image level is a dictionary
+                    # Print the iteration ( '\r' --> Overwrite the existing iteration each time)
+                    print(j, end='\r')
+
                     # Class ImageDataset returns sample, which is a dictionary that has keys 'images' and 'labels'
                     # 'images' --> Stores the transformed images (there can be multiple from each study)
                     # Start indexing from the first image
-                    # index 0 looks into the study of the batch
-                    # inputs = data['images'][j]
-                    inputs = study
-
+                    inputs = image
                     # Convert the label (0 or 1) to an integer Tensor
                     labels = data['label'][j].type(torch.Tensor)
-
                     # Wrap them in Variables
                     # NOTE: A variable forms a thin wrapper around a tensor object, its gradients,
                     # and a reference to the function that created it.
                     # The loss function should give a scalar value --> Optimiser will use scalar value and determine
                     # next epoch's ideal weights
                     # print('labels pre', labels.shape)
-                    inputs = Variable(inputs.cuda())
-                    labels = Variable(labels.cuda())
+                    inputs = Variable(inputs)
+                    labels = Variable(labels)
 
                     # zero the parameter gradients --> Why? Back propagation accumulates gradients, and you don't want
                     # to mix up gradients between mini batches
                     optimizer.zero_grad()
 
-                    # Forward propagation (find output)
-                    # When you feed the images into the model, it will yield a probability of the classification
-                    outputs = model(inputs)
-                    # Find the average of the probability of the classification
-                    # We comment it out because we need tensor for torch.max operation
-                    outputs = torch.mean(outputs)
-                    # Calculate the LOSS (Error) of the classification
-                    # Creates a criterion that measures the mean absolute error (MAE) between each element in
-                    # the output and target (labels) based on whether it is for train or validation
-                    loss = criterion(outputs, labels, phase)
-                    running_loss += loss.data[0]
+                    with torch.set_grad_enabled(phase == 'train'):
+                        # Forward propagation (find output)
+                        # When you feed the images into the model, it will yield a probability of the classification
 
-                    # Why do we back propagate here? We want to recreate the image to determine the spatial frequency
-                    # features
-                    # backward propagation + optimize only if in training phase
-                    if phase == 'train':
-                        loss.sum().backward()
-                        optimizer.step()
+                        # Add a blank dimension
+                        inputs = inputs[None, :, :, :]
+                        outputs = model(inputs)
+                        # Find the average of the probability of the classification
+                        # We comment it out because we need tensor for torch.max operation
+                        # outputs = torch.mean(outputs)
+                        # Calculate the LOSS (Error) of the classification
+                        # Creates a criterion that measures the mean absolute error (MAE) between each element in
+                        # the output and target (labels) based on whether it is for train or validation
+                        print('outputs:', outputs)
+                        loss = criterion(outputs, labels, phase)
+                        preds = (outputs > 0.5).type(torch.FloatTensor)
 
-                    # NOTE: Variable is a wrapper and has multiple components --> We only need to access the data component
-                    # Use .detach to access the data for Variables
-                    # Preds = Prediction of the classification --> Will be between 0 and 1 --> However we want it above 0.5
-                    # Convert the tensor from CPU to GPU to decrease run time
-                    # Statistics
-                    # Outputs is a tensor (array) --> There should only be a single value
-                    # preds = torch.max(outputs.data, 1)
-                    preds = (outputs > 0.5).type(torch.cuda.FloatTensor)
+                        # Why do we back propagate here? We want to recreate the image to determine the spatial frequency
+                        # features
+                        # backward propagation + optimize only if in training phase
+                        if phase == 'train':
+                            loss.sum().backward()
+                            optimizer.step()
+
+                    running_loss += loss
                     running_corrects += torch.sum(torch.eq(preds, labels.data))
-                    #confusion_matrix[phase].add(preds, labels.data)
 
-                    # print('inputs[0]:', inputs.shape)
-                    # print('inputs:', data['images'].shape)
-                    # print('labels:', labels.shape)
-                    # print('labels.data:', labels.data.shape)
-                    # print('labels.data[0]:', labels.data.shape)
-                    # print('outputs:', outputs.shape)
-                    # print('preds', preds)
-                    # print('labels.data', labels.data)
-                    # print('dataset_size', dataset_sizes)
-                    # print('eq', torch.sum(torch.eq(preds, labels.data)))
-                    # print('run correct', running_corrects)
+                    # Select pred value
+                    preds = preds[0]
+                    labels = torch.tensor([labels])
+                    print('preds:', preds)
+                    print('label:', labels)
+                    confusion_matrix[phase].add(preds, labels)
 
             # Calculate the loss and accuracy
             epoch_loss = running_loss.item() / dataset_sizes[phase]
             epoch_acc = running_corrects.item() / dataset_sizes[phase]
-
-            # print('acc', epoch_acc)
-            # print('acc2', epoch_acc.item())
-            # print('acc3', running_corrects.item()/dataset_sizes[phase]) this one works
 
             # Append onto the empty lists
             costs[phase].append(epoch_loss)
@@ -152,7 +140,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
             # Print the loss & Accuracy for each epoch
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                 phase, epoch_loss, epoch_acc))
-            #print('Confusion Meter:\n', confusion_matrix[phase].value())
+            print('Confusion Meter:\n', confusion_matrix[phase].value())
 
             # deep copy the model
             if phase == 'valid':
@@ -199,8 +187,9 @@ def get_metrics(model, criterion, dataloaders, dataset_sizes, phase='valid'):
     for i, data in enumerate(dataloaders[phase]):
         print(i, end='\r')
         # data is a dictionary with keys 'label' and 'images' --> Check output of ImageDataset class
-        labels = data['label'].type(torch.Tensor)
-        inputs = data['images'][0]
+
+        labels = data[1].type(torch.Tensor)
+        inputs = data[0][0]
         # wrap them in Variable
         inputs = Variable(inputs.cuda())
         labels = Variable(labels.cuda())
