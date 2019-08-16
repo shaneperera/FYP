@@ -1,24 +1,24 @@
 import torch.nn as nn
 import torch.optim
+import pandas as pd
 from densenet import densenet169
 from utils import n_p, get_count
 from train import train_model, get_metrics
-from datapipeline import get_study_data, get_dataloaders
+from datapipeline import get_image_data, get_dataloaders
+
 
 if __name__ == '__main__':
     # #### load study level dict data
-    study_data = get_study_data(study_type='XR_WRIST')
-
+    image_data = get_image_data(study_type='XR_WRIST')
     # #### Create dataloaders pipeline
     data_cat = ['train', 'valid']  # data categories
-    dataloaders = get_dataloaders(study_data, batch_size=1)
-
-    dataset_sizes = {x: len(study_data[x]) for x in data_cat}
+    dataloaders = get_dataloaders(image_data, batch_size=8)
+    dataset_sizes = {x: len(image_data[x]) for x in data_cat}
 
     # #### Build model
-    # tai = total abnormal images, tni = total normal images
-    tai = {x: get_count(study_data[x], 'positive') for x in data_cat}
-    tni = {x: get_count(study_data[x], 'negative') for x in data_cat}
+    # tai = total abnormal images, tni = total normal images (in whole phase)
+    tai = {x: get_count(image_data[x], 'positive') for x in data_cat}
+    tni = {x: get_count(image_data[x], 'negative') for x in data_cat}
 
     # Find the weights of abnormal images and normal images
     # Compare get_metrics to this value --> This is the output we are aiming for
@@ -44,9 +44,8 @@ if __name__ == '__main__':
                     1 - inputs).log())
             return loss
 
-
     model = densenet169(pretrained=True)
-    model = model.cuda()
+    #model = model.cuda()
 
     criterion = Loss(Wt1, Wt0)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
@@ -57,7 +56,6 @@ if __name__ == '__main__':
 
     # Pytorch automatically converts the model weights into a pickle file
 
-
     torch.save(model.state_dict(), 'model.pth')
 
-    get_metrics(model, criterion, dataloaders, dataset_sizes)
+   # get_metrics(model, criterion, dataloaders, dataset_sizes)
