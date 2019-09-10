@@ -3,7 +3,8 @@ from torch.autograd import Variable
 import matplotlib.pyplot as plt
 
 
-def plot_training(costs, accs):
+
+def plot_training(costs, accs, num_ID):
     """
     Plots curve of Cost vs epochs and Accuracy vs epochs for 'train' and 'valid' sets during training
     """
@@ -33,6 +34,8 @@ def plot_training(costs, accs):
     plt.legend(['train', 'valid'], loc='upper left')
     plt.title('Cost')
 
+    #save plot in plots folder
+    plt.savefig('plots/run_'+ str(num_ID) +'.png',bbox_inches='tight')
     plt.show()
 
 

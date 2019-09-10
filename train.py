@@ -8,7 +8,7 @@ from utils import plot_training
 data_cat = ['train', 'valid']  # data categories
 
 def train_model(model, criterion, optimizer, dataloaders, scheduler,
-                dataset_sizes, num_epochs):
+                dataset_sizes, num_epochs, costs, accs, num_ID):
     # In order to determine how long each epoch takes to travel in the network,
     # measure the time since the beginning of the first epoch
     since = time.time()
@@ -22,8 +22,8 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
 
     # Store the cost & accuracy per epoch
     # Each is a dictionary with keys valid and train --> List is defined to store the values for each epoch
-    costs = {x: [] for x in data_cat}  # for storing costs per epoch
-    accs = {x: [] for x in data_cat}  # for storing accuracies per epoch
+    # costs = {x: [] for x in data_cat}  # for storing costs per epoch
+    # accs = {x: [] for x in data_cat}  # for storing accuracies per epoch
 
     # Print the number of dataloaders present (each dataloader has specific batch of images)
     print('Train batches:', len(dataloaders['train']))
@@ -62,6 +62,19 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
             model.train(phase == 'train')
             running_loss = 0.0
             running_corrects = 0
+            counter1 = 0
+            counter2 = 0
+            counter3 = 0
+            counter4 = 0
+            running_loss1 = 0
+            running_loss2 = 0
+            running_loss3 = 0
+            running_loss4 = 0
+            avg_loss1 = 0
+            avg_loss2 = 0
+            avg_loss3 = 0
+            avg_loss4 = 0
+
             # Iterate over data
             # Enumerate --> Loop over something and have an automatic counter
             # Eg. Enumerate(dataloaders['train'],2) --> Start at the second index and begin counting
@@ -76,8 +89,8 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                     # Start indexing from the first image
                     # index 0 looks into the study of the batch
                     # inputs = data['images'][j]
-                    inputs = study #[0:study_count[k]-1]
-                    #k += 1
+                    inputs = study  # [0:study_count[k]-1]
+                    # k += 1
                     # Convert the label (0 or 1) to an integer Tensor
                     labels = data[1][j].type(torch.Tensor)
 
@@ -85,12 +98,12 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                         with torch.no_grad():
                             inputs = Variable(inputs.cuda())
                             labels = Variable(labels.cuda())
-
                             # zero the parameter gradients --> Why? Back propagation accumulates gradients, and you don't want
                             # to mix up gradients between mini batches
                             optimizer.zero_grad()
                             # Forward propagation (find output)
                             # When you feed the images into the model, it will yield a probability of the classification
+
                             outputs = model(inputs)
                             # Find the average of the probability of the classification
                             # We comment it out because we need tensor for torch.max operation
@@ -99,7 +112,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                             # Creates a criterion that measures the mean absolute error (MAE) between each element in
                             # the output and target (labels) based on whether it is for train or validation
                             loss = criterion(outputs, labels, phase)
-                            running_loss += loss
+                            running_loss += loss.item()
                     else:
                         # Wrap them in Variables
                         # NOTE: A variable forms a thin wrapper around a tensor object, its gradients,
@@ -115,6 +128,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                         optimizer.zero_grad()
                         # Forward propagation (find output)
                         # When you feed the images into the model, it will yield a probability of the classification
+
                         outputs = model(inputs)
                         # Find the average of the probability of the classification
                         # We comment it out because we need tensor for torch.max operation
@@ -123,16 +137,16 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                         # Creates a criterion that measures the mean absolute error (MAE) between each element in
                         # the output and target (labels) based on whether it is for train or validation
                         loss = criterion(outputs, labels, phase)
-                        running_loss += loss
+                        running_loss += loss.item()
+
+                    #print('outputs:',outputs.item())
+                    #print('loss:',loss.item())
 
                     # Why do we back propagate here? We want to recreate the image to determine the spatial frequency
                     # features
                     # backward propagation + optimize only if in training phase
                     if phase == 'train':
                         loss.sum().backward()
-                        optimizer.step()
-
-
 
                     # NOTE: Variable is a wrapper and has multiple components --> We only need to access the data component
                     # Use .detach to access the data for Variables
@@ -143,27 +157,46 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                     # preds = torch.max(outputs.data, 1)
                     preds = (outputs > 0.5).type(torch.cuda.FloatTensor)
                     running_corrects += torch.sum(torch.eq(preds, labels.data))
-                    #confusion_matrix[phase].add(preds, labels.data)
 
-                    # print('inputs[0]:', inputs.shape)
-                    # print('inputs:', data['images'].shape)
-                    # print('labels:', labels.shape)
-                    # print('labels.data:', labels.data.shape)
-                    # print('labels.data[0]:', labels.data.shape)
-                    # print('outputs:', outputs.shape)
-                    # print('preds', preds)
-                    # print('labels.data', labels.data)
-                    # print('dataset_size', dataset_sizes)
-                    # print('eq', torch.sum(torch.eq(preds, labels.data)))
-                    # print('run correct', running_corrects)
+
+
+                    # obtain running loss and count for each classification
+                    if (preds == 0 and labels.data == 0):
+                        counter1 += 1
+                        running_loss1 += loss.item()
+                    elif (preds == 0 and labels.data == 1):
+                        counter2 += 1
+                        running_loss2 += loss.item()
+                    elif (preds == 1 and labels.data == 0):
+                        counter3 += 1
+                        running_loss3 += loss.item()
+                    else:  # (preds == 1 and labels.data == 1)
+                        counter4 += 1
+                        running_loss4 += loss.item()
+                    # preds = torch.tensor([preds]) #test
+                    # labels = torch.tensor([labels])
+                    # confusion_matrix[phase].add(preds, labels.data)
+                if phase == 'train':
+                    optimizer.step()
 
             # Calculate the loss and accuracy
-            epoch_loss = running_loss.item() / dataset_sizes[phase]
+            epoch_loss = running_loss / dataset_sizes[phase]
             epoch_acc = running_corrects.item() / dataset_sizes[phase]
 
-            # print('acc', epoch_acc)
-            # print('acc2', epoch_acc.item())
-            # print('acc3', running_corrects.item()/dataset_sizes[phase]) this one works
+            #obtain average loss for each classification
+
+            if counter1 >0:
+                avg_loss1 = running_loss1 / counter1
+            if counter2 > 0:
+                avg_loss2 = running_loss2 / counter2
+            if counter3 > 0:
+                avg_loss3 = running_loss3 / counter3
+            if counter4 > 0:
+                avg_loss4 = running_loss4 / counter4
+
+            print('             Norm   Abnormal')
+            print('True Norm:   {:.4f}  {:.4f}'.format(avg_loss1, avg_loss3))
+            print('True Abnorm: {:.4f}  {:.4f}'.format(avg_loss2,avg_loss4))
 
             # Append onto the empty lists
             costs[phase].append(epoch_loss)
@@ -172,7 +205,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
             # Print the loss & Accuracy for each epoch
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                 phase, epoch_loss, epoch_acc))
-            #print('Confusion Meter:\n', confusion_matrix[phase].value())
+            # print('Confusion Meter:\n', confusion_matrix[phase].value())
 
             # deep copy the model
             if phase == 'valid':
@@ -198,7 +231,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
 
     # Plot the costs and accuracy vs epoch
     # NOTE: costs and accs is a dictionary with keys 'valid' and 'train' --> I have defined a list for each of them
-    plot_training(costs, accs)
+    plot_training(costs, accs, num_ID)
 
     # load best model weights
     model.load_state_dict(best_model_wts)
@@ -239,11 +272,11 @@ def get_metrics(model, criterion, dataloaders, dataset_sizes, phase='valid'):
         preds = (outputs.data > 0.5).type(torch.cuda.FloatTensor)
         # preds = torch.max(outputs.data, 1)
 
-        running_corrects += torch.sum(torch.eq(preds,labels.data))
-        #confusion_matrix.add(preds, labels.data)
+        running_corrects += torch.sum(torch.eq(preds, labels.data))
+        # confusion_matrix.add(preds, labels.data)
 
     loss = running_loss.item() / dataset_sizes[phase]
     acc = running_corrects.item() / dataset_sizes[phase]
 
     print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, loss, acc))
-    #print('Confusion Meter:\n', confusion_matrix.value())
+    # print('Confusion Meter:\n', confusion_matrix.value())

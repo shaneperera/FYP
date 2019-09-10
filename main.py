@@ -1,18 +1,32 @@
 import torch.nn as nn
 import torch.optim
-import pandas as pd
 from densenet import densenet169
 from utils import n_p, get_count
 from train import train_model, get_metrics
 from datapipeline import get_study_data, get_dataloaders, ImageDataset
-
+import json
 
 if __name__ == '__main__':
+    #load JSON file
+    with open('Settings.json', 'r') as f:
+        settings = json.load(f)
+
+    #selecting run in JSON file
+    num_ID = 0
+
+    #load variables from JSON file
+    batch_size = settings['run'][num_ID]['bs']
+    epochs = settings['run'][num_ID]['epochs']
+    learning_rate = settings['run'][num_ID]['lr']
+    droprate = settings['run'][num_ID]['dropout']
+    costs = settings['run'][num_ID]['costs']
+    accs = settings['run'][num_ID]['accuracy']
+
     # #### load study level dict data
     study_data = get_study_data(study_type='XR_WRIST')
     # #### Create dataloaders pipeline
     data_cat = ['train', 'valid']  # data categories
-    dataloaders = get_dataloaders(study_data, batch_size=8)
+    dataloaders = get_dataloaders(study_data, batch_size)
     dataset_sizes = {x: len(study_data[x]) for x in data_cat}
 
     # #### Build model
@@ -45,20 +59,29 @@ if __name__ == '__main__':
             return loss
 
 
-    model = densenet169(pretrained=True)
+    model = densenet169(pretrained=True, droprate= droprate)
     model = model.cuda()
     #cudnn.benchmark = True
 
     criterion = Loss(Wt1, Wt0)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=1, verbose=True)
 
     # Train model
-    model = train_model(model, criterion, optimizer, dataloaders, scheduler, dataset_sizes, num_epochs=5)
+    model = train_model(model, criterion, optimizer, dataloaders, scheduler, dataset_sizes, num_epochs=epochs, costs= costs, accs= accs, num_ID = num_ID)
 
     # Pytorch automatically converts the model weights into a pickle file
+    modelpath = 'models/model_'+str(num_ID)+'.pth'
+    torch.save(model.state_dict(), modelpath)
 
+    #costs and accs will be auto updated from train
+    settings['run'][num_ID]['costs'] = costs
+    settings['run'][num_ID]['accuracy'] = accs
+    #saving model path for particular run
+    settings['run'][num_ID]['model_path'] = modelpath
 
-    torch.save(model.state_dict(), 'model.pth')
+    #store new accs and costs to JSON
+    with open('Settings.json', 'w') as f:
+        json.dump(settings,f, indent = 2)
 
    # get_metrics(model, criterion, dataloaders, dataset_sizes)
