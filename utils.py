@@ -3,7 +3,8 @@ from torch.autograd import Variable
 import matplotlib.pyplot as plt
 
 
-def plot_training(costs, accs):
+
+def plot_training(costs, accs, num_ID):
     """
     Plots curve of Cost vs epochs and Accuracy vs epochs for 'train' and 'valid' sets during training
     """
@@ -33,15 +34,16 @@ def plot_training(costs, accs):
     plt.legend(['train', 'valid'], loc='upper left')
     plt.title('Cost')
 
+    #save plot in plots folder
+    plt.savefig('plots/run_'+ str(num_ID) +'.png',bbox_inches='tight')
     plt.show()
 
 
 def n_p(x):
     """convert numpy float to Variable tensor float"""
-    return Variable(torch.FloatTensor([x]), requires_grad=False)
+    return Variable(torch.cuda.FloatTensor([x]), requires_grad=False)
 
 
-# Calculate number of normal/abnormal images for entire category (eg. XR_WRIST)
 def get_count(df, cat):
     """
     Returns number of images in a study type dataframe which are of abnormal or normal
@@ -49,12 +51,8 @@ def get_count(df, cat):
     df -- dataframe
     cat -- category, "positive" for abnormal and "negative" for normal
     """
-    # Check if 'positive or negative' in path --> returns 1 or 0
-    # Previously when iterating over studies, you'd count every picture in that study
-    # Hence, you would do df[df['Path'].str.contains(cat)]['Count'].sum()
-
-    # Don't need to enclose over df[] because we are not calling ['Count']
-    return df['Path'].str.contains(cat).sum()
+    # By looking at the path column in the pandas dataframe --> Check for the keywords (positive or negative)
+    return df[df['Path'].str.contains(cat)]['Count'].sum()
 
 
 if __name__ == 'main':
