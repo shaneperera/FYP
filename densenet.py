@@ -130,4 +130,3 @@ class DenseNet(nn.Module):
         # Change the final fully connected layer to Sigmoid (Probability function)
         out = F.torch.sigmoid(self.fc(out))
         return out
-
