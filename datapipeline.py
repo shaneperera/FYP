@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 from tqdm import tqdm
+import torch
 from torchvision import transforms
 from torch.utils.data import DataLoader, Dataset
 from torchvision.datasets.folder import pil_loader
@@ -12,7 +13,7 @@ data_cat = ['train', 'valid']
 
 
 # Create function to create dictionary regarding pathway to specific study type, number of patients in study type and
-def get_image_data(study_type):
+def get_study_data(study_type):
     """
     Returns a dictionary, with keys 'train' and 'valid' and respective values as study level data frames, these data
     frames contain three columns:
@@ -24,7 +25,7 @@ def get_image_data(study_type):
     """
 
     # Define empty dictionary
-    image_data = {}
+    study_data = {}
 
     # Define study classification dictionary --> Reference key to determine classification
     study_label = {'positive': 1, 'negative': 0}
@@ -35,7 +36,7 @@ def get_image_data(study_type):
 
         # Locate the MURA dataset
         # Include directory extension --> Special type of string formatting
-        base_directory = 'C:/Users/shann/Documents/FYP/MURA-v1.1/%s/%s/' % (category, study_type)
+        base_directory = 'D:\Desktop\FYP\MURA-v1.1/%s/%s/' % (category, study_type)
 
         # List of all the patients inside the study level
         # os.walk --> Generates file names in the directory --> When you enter XR_ELBOW --> Will print directory first
@@ -44,7 +45,7 @@ def get_image_data(study_type):
 
         # Each category (train/valid) will have 3 columns (the key is based on the path directory)
         # NOTE: There is a unique index as well --> Entries are path,count,label
-        image_data[category] = pd.DataFrame(columns=['Path', 'Label'])
+        study_data[category] = pd.DataFrame(columns=['Path', 'Count', 'Label'])
 
         # Populate the rows (path,count,label) of the pandas dataframe
         i = 0  # Used to index the rows of the pandas data frame (table)
@@ -52,15 +53,15 @@ def get_image_data(study_type):
             # os.listdir --> Returns a list of files in the directory
             # (difference with os.walk is that you can't specify the direction)
             for study in os.listdir(base_directory + patient):
-                # We need image level support
-                for image in os.listdir(base_directory + patient + '/' + study):
-                    # Chance of study1_negative & study2_positive (for eg.)
-                    path = base_directory + patient + '/' + study + '/' + image
-                    label = study_label[study.split('_')[1]]  # Notation: study1_negative -> Splits --> Choose term after _
-                    image_data[category].loc[i] = [path, label]  # add new row to data frame
-                    # .loc gets rows from particular labels (eg. patient number)
-                    i += 1
-    return image_data
+                # Chance of study1_negative & study2_positive (for eg.)
+                path = base_directory + patient + '/' + study + '/'
+                label = study_label[study.split('_')[1]]  # Notation: study1_negative -> Splits --> Choose term after _
+                study_data[category].loc[i] = [path, len(os.listdir(path)), label]  # add new row to data frame
+                # .loc gets rows from particular labels (eg. patient number)
+                i += 1
+
+
+    return study_data
 
 
 class ImageDataset(Dataset):
@@ -83,25 +84,44 @@ class ImageDataset(Dataset):
     def __getitem__(self, idx):
         # Returns an image based on the index (idx) in the pandas dataframe
         # Pandas dataframe has notation: Path, Count, Label
+        study_path = self.df.iloc[idx, 0]
         # iloc -> Identifies which rows (idx) and which columns (0)
 
-        img_path = self.df.iloc[idx, 0]
-        image = pil_loader(img_path)
-        label = self.df.iloc[idx, 1]
+        # Find the total number of studies for the patient
+        count = self.df.iloc[idx, 1]
 
-        if self.transform:
-            image = self.transform(image)
+        # Create a list of all the images
+        # Tuple --> ()
+        images = []  # Originally a list --> []
+        for i in range(count):
+            # Notation: image1 OR image2
+            # Indexing starts at 0 --> Images are indexed from 1 onwards
+            # pil_loader --> Opens the path and reads in the image in that location
+            image = pil_loader(study_path + 'image%s.png' % (i + 1))
+
+            # image = image.convert('RGB')
+
+            # .extend --> a = [1,2,3,4,5,6]
+            # .append --> a = [1,2,3,[4,5,6]]
+            # Transform the original image into standard notation --> All images will have the same normalisation as
+            # ImageNet
+            # ONLY FEED THROUGH THE TRANSFORMED IMAGE --> Images starts off as an empty list
+            images.append(self.transform(image))
+        images = torch.stack(images)
+        #print(images.shape)
+        label = self.df.iloc[idx, 2]
+
         # Create a dictionary which holds all the transformed images in a single list (original isn't fed into dict)
         # Label --> Classification of positive or negative
-        sample = {'images': image, 'label': label}
+        sample = {'images': images, 'label': label}
 
         return sample
 
-# def my_collate(batch):
-#     data = [item['images'] for item in batch]  #  form a list of tensor
-#     target = [item['label'] for item in batch]
-#     target = torch.LongTensor(target)
-#     return [data, target]
+def my_collate(batch):
+    data = [item['images'] for item in batch]  #  form a list of tensor
+    target = [item['label'] for item in batch]
+    target = torch.LongTensor(target)
+    return [data, target]
 
 def get_dataloaders(data, batch_size):
     """
@@ -126,7 +146,7 @@ def get_dataloaders(data, batch_size):
     image_datasets = {x: ImageDataset(data[x], transform=data_transforms[x]) for x in data_cat}
 
     # Load in batches of 8 images into the Neural Network
-    dataloaders = {x: DataLoader(image_datasets[x], batch_size=batch_size, shuffle=True, num_workers=8) for x in
+    dataloaders = {x: DataLoader(image_datasets[x], batch_size=batch_size, shuffle=True, num_workers=8, collate_fn = my_collate) for x in
                    data_cat}
     return dataloaders
 
