@@ -2,8 +2,8 @@ import torch.nn as nn
 import torch.optim
 from densenet import densenet169
 from utils import n_p, get_count
-from train import train_model, get_metrics
-from datapipeline import get_study_data, get_dataloaders, ImageDataset
+from train import train_model
+from datapipeline import get_study_data, get_dataloaders
 import json
 
 if __name__ == '__main__':
@@ -12,15 +12,17 @@ if __name__ == '__main__':
         settings = json.load(f)
 
     #selecting run in JSON file
-    num_ID = 0
+    num_ID = 1
 
     #load variables from JSON file
     batch_size = settings['run'][num_ID]['bs']
-    epochs = settings['run'][num_ID]['epochs']
+    current_epoch = settings['run'][num_ID]['current_epoch']
+    epochs = settings['run'][num_ID]['total_epochs']
     learning_rate = settings['run'][num_ID]['lr']
     droprate = settings['run'][num_ID]['dropout']
     costs = settings['run'][num_ID]['costs']
     accs = settings['run'][num_ID]['accuracy']
+    latest_model_path = settings['run'][num_ID]['latest_model_path']
 
     # #### load study level dict data
     study_data = get_study_data(study_type='XR_WRIST')
@@ -60,6 +62,8 @@ if __name__ == '__main__':
 
 
     model = densenet169(pretrained=True, droprate= droprate)
+    if latest_model_path != "":
+        model.load_state_dict(torch.load(latest_model_path))
     model = model.cuda()
     #cudnn.benchmark = True
 
@@ -68,20 +72,5 @@ if __name__ == '__main__':
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=1, verbose=True)
 
     # Train model
-    model = train_model(model, criterion, optimizer, dataloaders, scheduler, dataset_sizes, num_epochs=epochs, costs= costs, accs= accs, num_ID = num_ID)
+    model = train_model(model, criterion, optimizer, dataloaders, scheduler, dataset_sizes, num_epochs=epochs-current_epoch, costs= costs, accs= accs, num_ID = num_ID)
 
-    # Pytorch automatically converts the model weights into a pickle file
-    modelpath = 'models/model_'+str(num_ID)+'.pth'
-    torch.save(model.state_dict(), modelpath)
-
-    #costs and accs will be auto updated from train
-    settings['run'][num_ID]['costs'] = costs
-    settings['run'][num_ID]['accuracy'] = accs
-    #saving model path for particular run
-    settings['run'][num_ID]['model_path'] = modelpath
-
-    #store new accs and costs to JSON
-    with open('Settings.json', 'w') as f:
-        json.dump(settings,f, indent = 2)
-
-   # get_metrics(model, criterion, dataloaders, dataset_sizes)
