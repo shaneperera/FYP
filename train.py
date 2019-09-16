@@ -4,8 +4,12 @@ import torch
 from torchnet import meter
 from torch.autograd import Variable
 from utils import plot_training
+import json
 
 data_cat = ['train', 'valid']  # data categories
+
+with open('Settings.json', 'r') as f:
+    settings = json.load(f)
 
 def train_model(model, criterion, optimizer, dataloaders, scheduler,
                 dataset_sizes, num_epochs, costs, accs, num_ID):
@@ -93,7 +97,6 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                     # k += 1
                     # Convert the label (0 or 1) to an integer Tensor
                     labels = data[1][j].type(torch.Tensor)
-
                     if phase == 'valid':
                         with torch.no_grad():
                             inputs = Variable(inputs.cuda())
@@ -211,15 +214,36 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
             if phase == 'valid':
                 scheduler.step(epoch_loss)
                 # If the accuracy of current epoch is better than previous epoch, make a replica of the weights
-                if epoch_acc > best_acc:
-                    best_acc = epoch_acc
-                    best_model_wts = copy.deepcopy(model.state_dict())
+                print("epoch acc:",epoch_acc)
+                print("max:", max(accs[phase]))
+                if epoch_acc == max(accs[phase]):
+                    best_model_path = 'models/best_model_' + str(num_ID) + '.pth'
+                    torch.save(model.state_dict(),best_model_path)
+                    settings['run'][num_ID]['best_model_path'] = best_model_path
+                    #best_model_wts = copy.deepcopy(model.state_dict())
+                    #model.load_state_dict(best_model_wts)
 
         # Determine the time it has taken to run the epoch
         time_elapsed = time.time() - since
         print('Time elapsed: {:.0f}m {:.0f}s'.format(
             time_elapsed // 60, time_elapsed % 60))
         print()
+
+
+        # Pytorch automatically converts the model weights into a pickle file
+        latest_model_path = 'models/latest_model_' + str(num_ID) + '.pth'
+        torch.save(model.state_dict(), latest_model_path)
+
+        # costs and accs will be auto updated from train
+        settings['run'][num_ID]['costs'] = costs
+        settings['run'][num_ID]['accuracy'] = accs
+        # saving model path for particular run
+        settings['run'][num_ID]['latest_model_path'] = latest_model_path
+        settings['run'][num_ID]['current_epoch'] = settings['run'][num_ID]['current_epoch'] + 1
+
+        # store new accs and costs to JSON
+        with open('Settings.json', 'w') as f:
+            json.dump(settings, f, indent=2)
 
     # All the epochs have completed (training phase complete) -> This is how long it took the training phase to complete
     time_elapsed = time.time() - since
@@ -234,49 +258,4 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
     plot_training(costs, accs, num_ID)
 
     # load best model weights
-    model.load_state_dict(best_model_wts)
     return model
-
-
-# Up until now, we have only calculated the loss and accuracy for each epoch individually for either valid and train
-# Now find the total acc, loss and confusion meter for ALL the epochs in the valid and train set
-def get_metrics(model, criterion, dataloaders, dataset_sizes, phase='valid'):
-    """
-    Loops over phase (train or valid) set to determine acc, loss and
-    confusion meter of the model.
-    """
-    confusion_matrix = meter.ConfusionMeter(2, normalized=True)
-    running_loss = 0.0
-    running_corrects = 0
-
-    for i, data in enumerate(dataloaders[phase]):
-        print(i, end='\r')
-        # data is a dictionary with keys 'label' and 'images' --> Check output of ImageDataset class
-
-        labels = data[1].type(torch.Tensor)
-        inputs = data[0][0]
-        # wrap them in Variable
-        inputs = Variable(inputs.cuda())
-        labels = Variable(labels.cuda())
-        # forward propagation
-        # Find the prediction of the classification
-
-        # Outputs a tensor corresponding to each epoch
-        outputs = model(inputs)
-        # outputs = torch.mean(outputs)
-        loss = criterion(outputs, labels, phase)
-        # statistics
-
-        running_loss += loss.data[0]
-
-        preds = (outputs.data > 0.5).type(torch.cuda.FloatTensor)
-        # preds = torch.max(outputs.data, 1)
-
-        running_corrects += torch.sum(torch.eq(preds, labels.data))
-        # confusion_matrix.add(preds, labels.data)
-
-    loss = running_loss.item() / dataset_sizes[phase]
-    acc = running_corrects.item() / dataset_sizes[phase]
-
-    print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, loss, acc))
-    # print('Confusion Meter:\n', confusion_matrix.value())
