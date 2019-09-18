@@ -24,6 +24,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
     # Initialise the accuracy
     best_acc = 0.0
 
+
     # Store the cost & accuracy per epoch
     # Each is a dictionary with keys valid and train --> List is defined to store the values for each epoch
     # costs = {x: [] for x in data_cat}  # for storing costs per epoch
@@ -217,6 +218,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                 print("epoch acc:",epoch_acc)
                 print("max:", max(accs[phase]))
                 if epoch_acc == max(accs[phase]):
+                    print('best model saved')
                     best_model_path = 'models/best_model_' + str(num_ID) + '.pth'
                     torch.save(model.state_dict(),best_model_path)
                     settings['run'][num_ID]['best_model_path'] = best_model_path
@@ -234,9 +236,10 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
         latest_model_path = 'models/latest_model_' + str(num_ID) + '.pth'
         torch.save(model.state_dict(), latest_model_path)
 
-        # costs and accs will be auto updated from train
+        # costs,accs, lr will be auto updated from train
         settings['run'][num_ID]['costs'] = costs
         settings['run'][num_ID]['accuracy'] = accs
+        settings['run'][num_ID]['lr'] = optimizer.param_groups[0]['lr']
         # saving model path for particular run
         settings['run'][num_ID]['latest_model_path'] = latest_model_path
         settings['run'][num_ID]['current_epoch'] = settings['run'][num_ID]['current_epoch'] + 1
