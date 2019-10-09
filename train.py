@@ -87,7 +87,9 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
             for i, data in enumerate(dataloaders[phase]):
                 # Print the iteration ( '\r' --> Overwrite the existing iteration each time)
                 print(i, end='\r')
-
+                #loss_array = []
+                total_loss = 0
+                counter =0
                 for j, study in enumerate(data[0]):
                     # Class ImageDataset returns sample, which is a dictionary that has keys 'images' and 'labels'
                     # 'images' --> Stores the transformed images (there can be multiple from each study)
@@ -140,8 +142,18 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                         # Calculate the LOSS (Error) of the classification
                         # Creates a criterion that measures the mean absolute error (MAE) between each element in
                         # the output and target (labels) based on whether it is for train or validation
+
                         loss = criterion(outputs, labels, phase)
+                        # print(loss)
+                        # print(loss.grad_fn)
+                        #  loss[0] = 0.222
+                        # print(loss)
+                        # print(loss.grad_fn)
                         running_loss += loss.item()
+
+                    # loss_array.append(loss.item())
+                    total_loss +=loss
+                    counter += 1
 
                     #print('outputs:',outputs.item())
                     #print('loss:',loss.item())
@@ -149,8 +161,9 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                     # Why do we back propagate here? We want to recreate the image to determine the spatial frequency
                     # features
                     # backward propagation + optimize only if in training phase
-                    if phase == 'train':
-                        loss.sum().backward()
+                    # if phase == 'train':
+                    #     loss.backward()
+
 
                     # NOTE: Variable is a wrapper and has multiple components --> We only need to access the data component
                     # Use .detach to access the data for Variables
@@ -180,7 +193,13 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                     # preds = torch.tensor([preds]) #test
                     # labels = torch.tensor([labels])
                     # confusion_matrix[phase].add(preds, labels.data)
+                # print(loss_array)
+                # avg_loss = torch.mean(loss_array)
+                # print(avg_loss)
+                loss[0] = total_loss/counter
+                #print(loss)
                 if phase == 'train':
+                    loss.backward()
                     optimizer.step()
 
             # Calculate the loss and accuracy

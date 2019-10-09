@@ -12,7 +12,7 @@ if __name__ == '__main__':
         settings = json.load(f)
 
     #selecting run in JSON file
-    num_ID = 3
+    num_ID = 6
 
     #load variables from JSON file
     batch_size = settings['run'][num_ID]['bs']
