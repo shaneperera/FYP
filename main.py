@@ -4,6 +4,9 @@ from densenet import densenet169
 from utils import n_p, get_count
 from train import train_model
 from datapipeline import get_study_data, get_dataloaders
+# from torchvision.models import resnet101
+import torch.utils.model_zoo as model_zoo
+from resnet import resnet101
 import json
 
 if __name__ == '__main__':
@@ -12,7 +15,7 @@ if __name__ == '__main__':
         settings = json.load(f)
 
     #selecting run in JSON file
-    num_ID = 6
+    num_ID = 7
 
     #load variables from JSON file
     batch_size = settings['run'][num_ID]['bs']
@@ -23,6 +26,7 @@ if __name__ == '__main__':
     costs = settings['run'][num_ID]['costs']
     accs = settings['run'][num_ID]['accuracy']
     latest_model_path = settings['run'][num_ID]['latest_model_path']
+    modeltype = settings['run'][num_ID]['modeltype']
 
     # #### load study level dict data
     study_data = get_study_data(study_type='XR_WRIST')
@@ -59,18 +63,24 @@ if __name__ == '__main__':
             loss = - (self.norm_weight[phase] * targets * inputs.log() + self.ab_weight[phase] * (1 - targets) * (
                     1 - inputs).log())
             return loss
+    if modeltype == "dense":
+        model = densenet169(pretrained=True, droprate= droprate)
+    else:
+        # model = resnet101(pretrained=True)
+        model = resnet101()
+        model.load_state_dict(model_zoo.load_url('https://download.pytorch.org/models/resnet101-5d3b4d8f.pth'),
+                              strict=False)
+        num_ftrs = model.fc.in_features
+        model.fc = nn.Linear(num_ftrs, 2)
 
-
-    model = densenet169(pretrained=True, droprate= droprate)
     if latest_model_path != "":
         model.load_state_dict(torch.load(latest_model_path))
     model = model.cuda()
-    #cudnn.benchmark = True
 
     criterion = Loss(Wt1, Wt0)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=1, verbose=True)
 
     # Train model
-    model = train_model(model, criterion, optimizer, dataloaders, scheduler, dataset_sizes, num_epochs=epochs-current_epoch, costs= costs, accs= accs, num_ID = num_ID)
+    model = train_model(model, criterion, optimizer, dataloaders, scheduler, dataset_sizes, num_epochs=epochs-current_epoch, costs= costs, accs= accs, num_ID = num_ID,modeltype = modeltype)
 

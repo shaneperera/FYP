@@ -6,20 +6,21 @@ from torch.autograd import Variable
 from utils import plot_training
 import json
 
+
 data_cat = ['train', 'valid']  # data categories
 
 with open('Settings.json', 'r') as f:
     settings = json.load(f)
 
 def train_model(model, criterion, optimizer, dataloaders, scheduler,
-                dataset_sizes, num_epochs, costs, accs, num_ID):
+                dataset_sizes, num_epochs, costs, accs, num_ID, modeltype):
     # In order to determine how long each epoch takes to travel in the network,
     # measure the time since the beginning of the first epoch
     since = time.time()
 
     # Create a deepcopy of the model weights --> If there is a better model, it will save those weights
     # Creates a replica of the weights --> If new weights lead to lower loss --> Save that instantiation of the network
-    best_model_wts = copy.deepcopy(model.state_dict())
+    # best_model_wts = copy.deepcopy(model.state_dict())
 
     # Initialise the accuracy
     best_acc = 0.0
@@ -109,7 +110,6 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                             optimizer.zero_grad()
                             # Forward propagation (find output)
                             # When you feed the images into the model, it will yield a probability of the classification
-
                             outputs = model(inputs)
                             # Find the average of the probability of the classification
                             # We comment it out because we need tensor for torch.max operation
@@ -144,14 +144,10 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                         # the output and target (labels) based on whether it is for train or validation
 
                         loss = criterion(outputs, labels, phase)
-                        # print(loss)
-                        # print(loss.grad_fn)
-                        #  loss[0] = 0.222
-                        # print(loss)
-                        # print(loss.grad_fn)
                         running_loss += loss.item()
-
                     # loss_array.append(loss.item())
+                    # print(outputs)
+                    # print('output: ',outputs.item(),'loss: ' ,loss.item())
                     total_loss +=loss
                     counter += 1
 
@@ -238,7 +234,10 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                 print("max:", max(accs[phase]))
                 if epoch_acc == max(accs[phase]):
                     print('best model saved')
-                    best_model_path = 'models/best_model_' + str(num_ID) + '.pth'
+                    if modeltype == "dense":
+                        best_model_path = 'models/best_model_' + str(num_ID) + '.pth'
+                    else:
+                        best_model_path = 'models/best_model_res_' + str(num_ID) + '.pth'
                     torch.save(model.state_dict(),best_model_path)
                     settings['run'][num_ID]['best_model_path'] = best_model_path
                     #best_model_wts = copy.deepcopy(model.state_dict())
@@ -252,7 +251,10 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
 
 
         # Pytorch automatically converts the model weights into a pickle file
-        latest_model_path = 'models/latest_model_' + str(num_ID) + '.pth'
+        if modeltype == "dense":
+            latest_model_path = 'models/latest_model_' + str(num_ID) + '.pth'
+        else:
+            latest_model_path = 'models/latest_model_res_' + str(num_ID) + '.pth'
         torch.save(model.state_dict(), latest_model_path)
 
         # costs,accs, lr will be auto updated from train

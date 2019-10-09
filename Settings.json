@@ -2,6 +2,7 @@
   "run": [
     {
       "num": 0,
+      "modeltype": "dense",
       "bs": 16,
       "total_epochs": 60,
       "current_epoch": 25,
@@ -124,6 +125,7 @@
     },
     {
       "num": 1,
+      "modeltype": "dense",
       "bs": 1,
       "total_epochs": 60,
       "current_epoch": 27,
@@ -254,6 +256,7 @@
     },
     {
       "num": 2,
+      "modeltype": "dense",
       "bs": 4,
       "total_epochs": 60,
       "current_epoch": 35,
@@ -416,6 +419,7 @@
     },
     {
       "num": 3,
+      "modeltype": "dense",
       "bs": 1,
       "total_epochs": 60,
       "current_epoch": 0,
@@ -434,6 +438,7 @@
     },
     {
       "num": 4,
+      "modeltype": "dense",
       "bs": 8,
       "total_epochs": 60,
       "current_epoch": 43,
@@ -628,6 +633,7 @@
     },
     {
       "num": 5,
+      "modeltype": "dense",
       "bs": 8,
       "total_epochs": 60,
       "current_epoch": 47,
@@ -838,6 +844,7 @@
     },
     {
       "num": 6,
+      "modeltype": "dense",
       "bs": 8,
       "total_epochs": 60,
       "current_epoch": 60,
@@ -1097,6 +1104,56 @@
       },
       "latest_model_path": "models/latest_model_6.pth",
       "best_model_path": "models/best_model_6.pth"
+    },
+    {
+      "num": 7,
+      "modeltype": "res",
+      "bs": 8,
+      "total_epochs": 60,
+      "current_epoch": 3,
+      "lr": 0.0001,
+      "dropout": 0,
+      "costs": {
+        "train": [
+          0.2690693871182729,
+          0.21409474337538112
+        ],
+        "valid": [
+          0.22822752488061848,
+          0.22258600826426272
+        ]
+      },
+      "accuracy": {
+        "train": [
+          0.723121387283237,
+          0.8040462427745665
+        ],
+        "valid": [
+          0.810126582278481,
+          0.8143459915611815
+        ]
+      },
+      "latest_model_path": "models/latest_model_res_7.pth",
+      "best_model_path": "models/best_model_res_7.pth"
+    },
+    {
+      "num": 8,
+      "modeltype": "res",
+      "bs": 8,
+      "total_epochs": 60,
+      "current_epoch": 0,
+      "lr": 0.0001,
+      "dropout": 0,
+      "costs": {
+        "train": [],
+        "valid": []
+      },
+      "accuracy": {
+        "train": [],
+        "valid": []
+      },
+      "latest_model_path": "",
+      "best_model_path": ""
     }
   ]
 }

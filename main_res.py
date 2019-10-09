@@ -13,7 +13,7 @@ if __name__ == '__main__':
         settings = json.load(f)
 
     #selecting run in JSON file
-    num_ID = 1
+    num_ID = 0
 
     #load variables from JSON file
     batch_size = settings['run'][num_ID]['bs']
@@ -24,6 +24,7 @@ if __name__ == '__main__':
     costs = settings['run'][num_ID]['costs']
     accs = settings['run'][num_ID]['accuracy']
     latest_model_path = settings['run'][num_ID]['latest_model_path']
+    modeltype = settings['run'][num_ID]['modetype']
 
     # #### load study level dict data
     study_data = get_study_data(study_type='XR_WRIST')
@@ -62,6 +63,7 @@ if __name__ == '__main__':
             return loss
 
     #ResNet model
+    modeltype = 'res'
     model = resnet101(pretrained=True)
     model.load_state_dict(model_zoo.load_url('https://download.pytorch.org/models/resnet101-5d3b4d8f.pth'), strict=False)
     num_ftrs = model.fc.in_features
@@ -77,5 +79,5 @@ if __name__ == '__main__':
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=1, verbose=True)
 
     # Train model
-    model = train_model(model, criterion, optimizer, dataloaders, scheduler, dataset_sizes, num_epochs=epochs-current_epoch, costs= costs, accs= accs, num_ID = num_ID)
+    model = train_model(model, criterion, optimizer, dataloaders, scheduler, dataset_sizes, num_epochs=epochs-current_epoch, costs= costs, accs= accs, num_ID = num_ID,modeltype = modeltype)
 

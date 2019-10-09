@@ -1,0 +1,92 @@
+{
+  "run": [
+    {
+      "num": 0,
+      "bs": 8,
+      "total_epochs": 60,
+      "current_epoch": 0,
+      "lr": 0.0001,
+      "dropout": 0,
+      "costs": {
+        "train": [
+        ],
+        "valid": [
+        ]
+      },
+      "accuracy": {
+        "train": [
+        ],
+        "valid": [
+        ]
+      },
+      "latest_model_path": "",
+      "best_model_path": ""
+    },
+    {
+      "num": 1,
+      "bs": 8,
+      "total_epochs": 60,
+      "current_epoch": 0,
+      "lr": 0.0001,
+      "dropout": 0,
+      "costs": {
+        "train": [
+        ],
+        "valid": [
+        ]
+      },
+      "accuracy": {
+        "train": [
+        ],
+        "valid": [
+        ]
+      },
+      "latest_model_path": "",
+      "best_model_path": ""
+    },
+    {
+      "num": 2,
+      "bs": 8,
+      "total_epochs": 60,
+      "current_epoch": 0,
+      "lr": 0.0001,
+      "dropout": 0,
+      "costs": {
+        "train": [
+        ],
+        "valid": [
+        ]
+      },
+      "accuracy": {
+        "train": [
+        ],
+        "valid": [
+        ]
+      },
+      "latest_model_path": "",
+      "best_model_path": ""
+    },
+    {
+      "num": 3,
+      "bs": 8,
+      "total_epochs": 60,
+      "current_epoch": 0,
+      "lr": 0.0001,
+      "dropout": 0,
+      "costs": {
+        "train": [
+        ],
+        "valid": [
+        ]
+      },
+      "accuracy": {
+        "train": [
+        ],
+        "valid": [
+        ]
+      },
+      "latest_model_path": "",
+      "best_model_path": ""
+    }
+  ]
+}
