@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 
 
 
+
 def plot_training(costs, accs, num_ID):
     """
     Plots curve of Cost vs epochs and Accuracy vs epochs for 'train' and 'valid' sets during training

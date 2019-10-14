@@ -283,3 +283,57 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
 
     # load best model weights
     return model
+
+
+def test_model(model, criterion, dataloaders,dataset_sizes):
+    running_loss = 0
+    running_corrects = 0
+    phase = "valid"
+    for i, data in enumerate(dataloaders[phase]):
+        # Print the iteration ( '\r' --> Overwrite the existing iteration each time)
+        print(i, end='\r')
+        # loss_array = []
+        total_loss = 0
+        counter = 0
+        for j, study in enumerate(data[0]):
+            # Class ImageDataset returns sample, which is a dictionary that has keys 'images' and 'labels'
+            # 'images' --> Stores the transformed images (there can be multiple from each study)
+            # Start indexing from the first image
+            # index 0 looks into the study of the batch
+            # inputs = data['images'][j]
+            inputs = study  # [0:study_count[k]-1]
+            # k += 1
+            # Convert the label (0 or 1) to an integer Tensor
+            labels = data[1][j].type(torch.Tensor)
+            with torch.no_grad():
+                inputs = Variable(inputs.cuda())
+                labels = Variable(labels.cuda())
+                # Forward propagation (find output)
+                # When you feed the images into the model, it will yield a probability of the classification
+                outputs = model(inputs)
+                # Find the average of the probability of the classification
+                # We comment it out because we need tensor for torch.max operation
+                outputs = torch.mean(outputs)
+                # Calculate the LOSS (Error) of the classification
+                # Creates a criterion that measures the mean absolute error (MAE) between each element in
+                # the output and target (labels) based on whether it is for train or validation
+                loss = criterion(outputs, labels, phase)
+                running_loss += loss.item()
+        # loss_array.append(loss.item())
+        # print(outputs)
+        # print('output: ',outputs.item(),'loss: ' ,loss.item())
+        total_loss += loss
+        counter += 1
+
+        preds = (outputs > 0.5).type(torch.cuda.FloatTensor)
+        running_corrects += torch.sum(torch.eq(preds, labels.data))
+
+    loss[0] = total_loss / counter
+
+
+    # Calculate the loss and accuracy
+    epoch_loss = running_loss / dataset_sizes[phase]
+    epoch_acc = running_corrects.item() / dataset_sizes[phase]
+
+    return epoch_acc, epoch_loss
+
