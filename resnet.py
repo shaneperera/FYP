@@ -120,6 +120,8 @@ def resnet101( **kwargs):
 
     # Main.py will call this function which uses our instantiation of the DenseNet model (Not Py torch version)
     model = ResNet(Bottleneck, [3, 4, 23, 3], **kwargs)
+    model.load_state_dict(model_zoo.load_url('https://download.pytorch.org/models/resnet101-5d3b4d8f.pth'),
+                          strict=False)
     # if pretrained:
     # Load the pre-trained weights from ImageNet using the URL
     #    model.load_state_dict(model_zoo.load_url(model_urls['resnet101']), strict=False)
@@ -134,6 +136,8 @@ def resnet152( **kwargs):
 
     # Main.py will call this function which uses our instantiation of the DenseNet model (Not Py torch version)
     model = ResNet(Bottleneck, [3, 8, 36, 3], **kwargs)
+    model.load_state_dict(model_zoo.load_url('https://download.pytorch.org/models/resnet152-b121ed2d.pth'),
+                          strict=False)
     # if pretrained:
     # Load the pre-trained weights from ImageNet using the URL
     #    model.load_state_dict(model_zoo.load_url(model_urls['resnet101']), strict=False)
@@ -153,25 +157,21 @@ def resnext101( **kwargs):
     #    model.load_state_dict(model_zoo.load_url(model_urls['resnet101']), strict=False)
     return model
 
-def conv3x3(in_planes, out_planes, stride=1, groups=1, dilation=1):
-    """3x3 convolution with padding"""
-    return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
-                     padding=dilation, groups=groups, bias=False, dilation=dilation)
-
 def wide_resnet101_2( **kwargs):
-    r"""Densenet-169 model from
-    `"Densely Connected Convolutional Networks" <https://arxiv.org/pdf/1608.06993.pdf>`_
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
-
+    kwargs['width_per_group'] = 64 * 2
     # Main.py will call this function which uses our instantiation of the DenseNet model (Not Py torch version)
     model = ResNet(Bottleneck, [3, 4, 23, 3], **kwargs)
+    model.load_state_dict(model_zoo.load_url('https://download.pytorch.org/models/wide_resnet101_2-32ee1156.pth'),
+                          strict=False)
     # if pretrained:
     # Load the pre-trained weights from ImageNet using the URL
     #    model.load_state_dict(model_zoo.load_url(model_urls['resnet101']), strict=False)
     return model
 
+def conv3x3(in_planes, out_planes, stride=1, groups=1, dilation=1):
+    """3x3 convolution with padding"""
+    return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
+                     padding=dilation, groups=groups, bias=False, dilation=dilation)
 
 def conv1x1(in_planes, out_planes, stride=1):
     """1x1 convolution"""

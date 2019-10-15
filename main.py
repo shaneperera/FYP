@@ -16,7 +16,7 @@ if __name__ == '__main__':
 
     #selecting run in JSON file
     num_ID = 13
-    test = 1
+    test = 0
 
     #load variables from JSON file
     batch_size = settings['run'][num_ID]['bs']
@@ -78,7 +78,7 @@ if __name__ == '__main__':
 
     if test:
         model = Ensemble("models/best_model_4.pth","models/best_model_res_12.pth")
-        model = model.cuda()
+        model.cuda()
         criterion = Loss(Wt1, Wt0)
         test_acc, test_loss = test_model(model,criterion,dataloaders,dataset_sizes)
         print(test_acc,test_loss)
@@ -89,15 +89,13 @@ if __name__ == '__main__':
             # model.classifier = nn.Linear(1664,1)
         else:
             # model = resnet101(pretrained=True)
-            model = wide_resnet101_2()
-            model.load_state_dict(model_zoo.load_url('https://download.pytorch.org/models/resnet101-5d3b4d8f.pth'),
-                                  strict=False)
+            model = resnet152()
             num_ftrs = model.fc.in_features
             model.fc = nn.Linear(num_ftrs, 1)
 
         if latest_model_path != "":
             model.load_state_dict(torch.load(latest_model_path))
-        model = model.cuda()
+        model.cuda()
 
         criterion = Loss(Wt1, Wt0)
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
