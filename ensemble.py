@@ -2,7 +2,7 @@ import torch.nn as nn
 from torchvision.models import resnet101
 import torch
 from densenet import densenet169
-from resnet import wide_resnet101_2
+from resnet import resnet101
 import torch.utils.model_zoo as model_zoo
 
 
@@ -15,7 +15,7 @@ class Ensemble(nn.Module):
         self.densenet = densenet169(pretrained=True, droprate= 0)
         self.densenet.load_state_dict(torch.load(densenet_path))
 
-        self.resnet = wide_resnet101_2()
+        self.resnet = resnet101()
         num_ftrs = self.resnet.fc.in_features
         self.resnet.fc = nn.Linear(num_ftrs, 1)
         self.resnet.load_state_dict(torch.load(resnet_path))
@@ -27,5 +27,5 @@ class Ensemble(nn.Module):
 
         x = sum([x1, x2]) /2
 
-        return x
+        return x1,x2
 

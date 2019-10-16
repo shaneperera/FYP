@@ -6,6 +6,8 @@ from train import train_model, test_model
 from datapipeline import get_study_data, get_dataloaders
 import torch.utils.model_zoo as model_zoo
 from resnet import resnet101,resnet152,resnext101,wide_resnet101_2
+from inception import inception_v3
+from VGG import vgg19_bn
 import json
 from ensemble import Ensemble
 
@@ -15,8 +17,8 @@ if __name__ == '__main__':
         settings = json.load(f)
 
     #selecting run in JSON file
-    num_ID = 13
-    test = 0
+    num_ID = 15
+    test = 1
 
     #load variables from JSON file
     batch_size = settings['run'][num_ID]['bs']
@@ -80,13 +82,23 @@ if __name__ == '__main__':
         model = Ensemble("models/best_model_4.pth","models/best_model_res_12.pth")
         model.cuda()
         criterion = Loss(Wt1, Wt0)
-        test_acc, test_loss = test_model(model,criterion,dataloaders,dataset_sizes)
-        print(test_acc,test_loss)
+        # test_acc, test_loss = test_model(model,criterion,dataloaders,dataset_sizes)
+        test_acc= test_model(model, criterion, dataloaders, dataset_sizes)
+        # print(test_acc,test_loss)
+        print(test_acc)
     else:
         if modeltype == "dense":
             model = densenet169(pretrained=True, droprate= droprate)
             # num_features = model.num_features
             # model.classifier = nn.Linear(1664,1)
+        elif modeltype == "inception":
+            model = inception_v3(pretrained=True)
+            # num_ftrs = model.fc.in_features
+            model.AuxLogits.fc = nn.Linear(768, 1)
+            model.fc = nn.Linear(2048, 1)
+        elif modeltype == "vgg":
+            model = vgg19_bn(pretrained=True)
+            model.classifier[6] = nn.Linear(4096, 1)
         else:
             # model = resnet101(pretrained=True)
             model = resnet152()

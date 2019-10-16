@@ -130,14 +130,14 @@ def get_dataloaders(data, batch_size):
 
     data_transforms = {
         'train': transforms.Compose([
-            transforms.Resize((224, 224)),
+            transforms.Resize((244, 244)),
             transforms.RandomHorizontalFlip(),
             transforms.RandomRotation(10),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
         'valid': transforms.Compose([
-            transforms.Resize((224, 224)),
+            transforms.Resize((244, 244)),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),

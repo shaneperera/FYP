@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
-from .utils import load_state_dict_from_url
-
+import torch.utils.model_zoo as model_zoo
 
 __all__ = [
     'VGG', 'vgg11', 'vgg11_bn', 'vgg13', 'vgg13_bn', 'vgg16', 'vgg16_bn',
@@ -44,6 +43,7 @@ class VGG(nn.Module):
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = self.classifier(x)
+        x = torch.sigmoid(x)
         return x
 
     def _initialize_weights(self):
@@ -69,7 +69,7 @@ def make_layers(cfg, batch_norm=False):
         else:
             conv2d = nn.Conv2d(in_channels, v, kernel_size=3, padding=1)
             if batch_norm:
-                layers += [conv2d, nn.BatchNorm2d(v), nn.ReLU(inplace=True)]
+                layers += [conv2d, nn.BatchNorm2d(v,track_running_stats= False), nn.ReLU(inplace=True)]
             else:
                 layers += [conv2d, nn.ReLU(inplace=True)]
             in_channels = v
@@ -89,8 +89,7 @@ def _vgg(arch, cfg, batch_norm, pretrained, progress, **kwargs):
         kwargs['init_weights'] = False
     model = VGG(make_layers(cfgs[cfg], batch_norm=batch_norm), **kwargs)
     if pretrained:
-        state_dict = load_state_dict_from_url(model_urls[arch],
-                                              progress=progress)
+        state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
         model.load_state_dict(state_dict)
     return model
 
@@ -172,4 +171,8 @@ def vgg19_bn(pretrained=False, progress=True, **kwargs):
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _vgg('vgg19_bn', 'E', True, pretrained, progress, **kwargs)
+    kwargs['init_weights'] = False
+    model = VGG(make_layers(cfgs['E'], batch_norm='True'), **kwargs)
+    model.load_state_dict(model_zoo.load_url('https://download.pytorch.org/models/vgg19_bn-c79401a0.pth'),
+                          strict=False)
+    return model

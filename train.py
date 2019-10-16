@@ -80,7 +80,6 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
             avg_loss2 = 0
             avg_loss3 = 0
             avg_loss4 = 0
-
             # Iterate over data
             # Enumerate --> Loop over something and have an automatic counter
             # Eg. Enumerate(dataloaders['train'],2) --> Start at the second index and begin counting
@@ -111,6 +110,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                             # Forward propagation (find output)
                             # When you feed the images into the model, it will yield a probability of the classification
                             outputs = model(inputs)
+
                             # Find the average of the probability of the classification
                             # We comment it out because we need tensor for torch.max operation
                             outputs = torch.mean(outputs)
@@ -170,8 +170,6 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
                     # preds = torch.max(outputs.data, 1)
                     preds = (outputs > 0.5).type(torch.cuda.FloatTensor)
                     running_corrects += torch.sum(torch.eq(preds, labels.data))
-
-
 
                     # obtain running loss and count for each classification
                     if (preds == 0 and labels.data == 0):
@@ -295,6 +293,7 @@ def test_model(model, criterion, dataloaders,dataset_sizes):
         # loss_array = []
         total_loss = 0
         counter = 0
+        diffcount = 0
         for j, study in enumerate(data[0]):
             # Class ImageDataset returns sample, which is a dictionary that has keys 'images' and 'labels'
             # 'images' --> Stores the transformed images (there can be multiple from each study)
@@ -311,13 +310,14 @@ def test_model(model, criterion, dataloaders,dataset_sizes):
                 # Forward propagation (find output)
                 # When you feed the images into the model, it will yield a probability of the classification
                 outputs = model(inputs)
+
                 # Find the average of the probability of the classification
                 # We comment it out because we need tensor for torch.max operation
                 outputs = torch.mean(outputs)
                 # Calculate the LOSS (Error) of the classification
                 # Creates a criterion that measures the mean absolute error (MAE) between each element in
                 # the output and target (labels) based on whether it is for train or validation
-                loss = criterion(outputs, labels, phase)
+                loss = criterion(out1, labels, phase)
                 running_loss += loss.item()
         # loss_array.append(loss.item())
         # print(outputs)
@@ -327,6 +327,9 @@ def test_model(model, criterion, dataloaders,dataset_sizes):
 
         preds = (outputs > 0.5).type(torch.cuda.FloatTensor)
         running_corrects += torch.sum(torch.eq(preds, labels.data))
+
+
+
 
     loss[0] = total_loss / counter
 
