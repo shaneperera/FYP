@@ -47,7 +47,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
         # meter.ConfusionMeter(k,normalized)
         # k = indicates the number of classes in the classification problem (in this case we have 2 --> +ve or -ve)
         # Normalised = Contains normalised values (like %) if not (counts)
-        confusion_matrix = {x: meter.ConfusionMeter(2, normalized=True) for x in data_cat}
+        # confusion_matrix = {x: meter.ConfusionMeter(2, normalized=True) for x in data_cat}
 
         # Print what epoch you are up to (Eg. Epoch 1/25)
         print('Epoch {}/{}'.format(epoch + 1, num_epochs))
@@ -277,7 +277,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
 
     # Plot the costs and accuracy vs epoch
     # NOTE: costs and accs is a dictionary with keys 'valid' and 'train' --> I have defined a list for each of them
-    plot_training(costs, accs, num_ID)
+    # plot_training(costs, accs, num_ID)
 
     # load best model weights
     return model
@@ -295,13 +295,7 @@ def test_model(model, criterion, dataloaders,dataset_sizes):
         counter = 0
         diffcount = 0
         for j, study in enumerate(data[0]):
-            # Class ImageDataset returns sample, which is a dictionary that has keys 'images' and 'labels'
-            # 'images' --> Stores the transformed images (there can be multiple from each study)
-            # Start indexing from the first image
-            # index 0 looks into the study of the batch
-            # inputs = data['images'][j]
-            inputs = study  # [0:study_count[k]-1]
-            # k += 1
+            inputs = study
             # Convert the label (0 or 1) to an integer Tensor
             labels = data[1][j].type(torch.Tensor)
             with torch.no_grad():
@@ -317,7 +311,7 @@ def test_model(model, criterion, dataloaders,dataset_sizes):
                 # Calculate the LOSS (Error) of the classification
                 # Creates a criterion that measures the mean absolute error (MAE) between each element in
                 # the output and target (labels) based on whether it is for train or validation
-                loss = criterion(out1, labels, phase)
+                loss = criterion(outputs, labels, phase)
                 running_loss += loss.item()
         # loss_array.append(loss.item())
         # print(outputs)
@@ -340,3 +334,145 @@ def test_model(model, criterion, dataloaders,dataset_sizes):
 
     return epoch_acc, epoch_loss
 
+def train_ensemble(model,ensemble,dataloaders,criterion, optimizer, scheduler, dataset_sizes,num_epochs,costs, accs,num_ID):
+    since = time.time()
+    for epoch in range(num_epochs):
+
+        # Print what epoch you are up to (Eg. Epoch 1/25)
+        print('Epoch {}/{}'.format(epoch + 1, num_epochs))
+        # Print a spacing to make it look cleaner (Eg. -------------------)
+        print('-' * 10)
+
+        # Each epoch has a training and validation phase
+        for phase in data_cat:
+            model.train(phase == 'train')
+            running_loss = 0.0
+            running_corrects = 0
+            best_acc = 0
+            for i, data in enumerate(dataloaders[phase]):
+                # Print the iteration ( '\r' --> Overwrite the existing iteration each time)
+                print(i, end='\r')
+                #loss_array = []
+                total_loss = 0
+                counter =0
+                for j, study in enumerate(data[0]):
+                    inputs = study  # [0:study_count[k]-1]
+                    # k += 1
+                    # Convert the label (0 or 1) to an integer Tensor
+                    labels = data[1][j].type(torch.Tensor)
+                    if phase == 'valid':
+                        with torch.no_grad():
+                            inputs = Variable(inputs.cuda())
+                            labels = Variable(labels.cuda())
+                            # zero the parameter gradients --> Why? Back propagation accumulates gradients, and you don't want
+                            # to mix up gradients between mini batches
+                            optimizer.zero_grad()
+                            # Forward propagation (find output)
+                            # When you feed the images into the model, it will yield a probability of the classification
+                            x1,x2,x3 = ensemble(inputs)
+                            # x1 = torch.mean(x1)
+                            # x2 = torch.mean(x2)
+                            # x3 = torch.mean(x3)
+                            outputs = model(x1,x2,x3)
+
+                            loss = criterion(outputs, labels, phase)
+                            running_loss += loss.item()
+                    else:
+                        # Wrap them in Variables
+                        # NOTE: A variable forms a thin wrapper around a tensor object, its gradients,
+                        # and a reference to the function that created it.
+                        # The loss function should give a scalar value --> Optimiser will use scalar value and determine
+                        # next epoch's ideal weights
+                        # print('labels pre', labels.shape)
+                        inputs = Variable(inputs.cuda())
+                        labels = Variable(labels.cuda())
+
+                        # zero the parameter gradients --> Why? Back propagation accumulates gradients, and you don't want
+                        # to mix up gradients between mini batches
+                        optimizer.zero_grad()
+                        # Forward propagation (find output)
+                        # When you feed the images into the model, it will yield a probability of the classification
+
+                        x1, x2, x3= ensemble(inputs)
+                        # x1 = torch.mean(x1)
+                        # x2 = torch.mean(x2)
+                        # x3 = torch.mean(x3)
+                        outputs = model(x1, x2, x3)
+
+                        loss = criterion(outputs, labels, phase)
+                        running_loss += loss.item()
+
+                    total_loss +=loss
+                    counter += 1
+
+
+                    preds = (outputs > 0.5).type(torch.cuda.FloatTensor)
+                    running_corrects += torch.sum(torch.eq(preds, labels.data))
+
+                # print(avg_loss)
+                loss[0] = total_loss/counter
+                if phase == 'train':
+                    loss.backward()
+                    optimizer.step()
+
+            # Calculate the loss and accuracy
+            epoch_loss = running_loss / dataset_sizes[phase]
+            epoch_acc = running_corrects.item() / dataset_sizes[phase]
+
+            costs[phase].append(epoch_loss)
+            accs[phase].append(epoch_acc)
+
+            # Print the loss & Accuracy for each epoch
+            print('{} Loss: {:.4f} Acc: {:.4f}'.format(
+                phase, epoch_loss, epoch_acc))
+            # print('Confusion Meter:\n', confusion_matrix[phase].value())
+
+            if phase == 'valid':
+                scheduler.step(epoch_loss)
+                # If the accuracy of current epoch is better than previous epoch, make a replica of the weights
+                print("epoch acc:", epoch_acc)
+                print("max:", max(accs[phase]))
+                if epoch_acc == max(accs[phase]):
+                    print('best model saved')
+                    best_model_path = 'models/best_model_' + str(num_ID) + '.pth'
+                    torch.save(model.state_dict(), best_model_path)
+                    settings['run'][num_ID]['best_model_path'] = best_model_path
+                    # best_model_wts = copy.deepcopy(model.state_dict())
+                    # model.load_state_dict(best_model_wts)
+
+        # Determine the time it has taken to run the epoch
+        time_elapsed = time.time() - since
+        print('Time elapsed: {:.0f}m {:.0f}s'.format(
+            time_elapsed // 60, time_elapsed % 60))
+        print()
+
+        # Pytorch automatically converts the model weights into a pickle file
+
+        latest_model_path = 'models/latest_model_' + str(num_ID) + '.pth'
+        torch.save(model.state_dict(), latest_model_path)
+
+        settings['run'][num_ID]['costs'] = costs
+        settings['run'][num_ID]['accuracy'] = accs
+        settings['run'][num_ID]['lr'] = optimizer.param_groups[0]['lr']
+        # saving model path for particular run
+        settings['run'][num_ID]['latest_model_path'] = latest_model_path
+        settings['run'][num_ID]['current_epoch'] = settings['run'][num_ID]['current_epoch'] + 1
+        # Determine the time it has taken to run the epoch
+        time_elapsed = time.time() - since
+        print('Time elapsed: {:.0f}m {:.0f}s'.format(
+            time_elapsed // 60, time_elapsed % 60))
+        print()
+
+        with open('Settings.json', 'w') as f:
+            json.dump(settings, f, indent=2)
+
+
+    # All the epochs have completed (training phase complete) -> This is how long it took the training phase to complete
+    time_elapsed = time.time() - since
+    print('Training complete in {:.0f}m {:.0f}s'.format(
+        time_elapsed // 60, time_elapsed % 60))
+
+
+
+    # load best model weights
+    return model

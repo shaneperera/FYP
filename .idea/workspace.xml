@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="BookmarkManager">
+    <bookmark url="file://$PROJECT_DIR$/main.py" line="184" />
+    <bookmark url="file://$PROJECT_DIR$/datapipeline.py" line="132" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="be0a91f3-34ff-4fc3-887a-5a87816f3615" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/inception.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/shufflenet.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Settings.json" beforeDir="false" afterPath="$PROJECT_DIR$/Settings.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/VGG.py" beforeDir="false" afterPath="$PROJECT_DIR$/VGG.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/datapipeline.py" beforeDir="false" afterPath="$PROJECT_DIR$/datapipeline.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/densenet.py" beforeDir="false" afterPath="$PROJECT_DIR$/densenet.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ensemble.py" beforeDir="false" afterPath="$PROJECT_DIR$/ensemble.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resnet.py" beforeDir="false" afterPath="$PROJECT_DIR$/resnet.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -19,11 +25,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="31">
-              <caret line="86" column="35" lean-forward="true" selection-start-line="86" selection-start-column="35" selection-end-line="86" selection-end-column="35" />
+            <state relative-caret-position="289">
+              <caret line="134" column="38" lean-forward="true" selection-start-line="134" selection-start-column="38" selection-end-line="134" selection-end-column="38" />
               <folding>
                 <element signature="e#0#21#0" expanded="true" />
               </folding>
@@ -32,10 +38,19 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/utils.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="34">
+              <caret line="2" selection-start-line="2" selection-end-line="2" selection-end-column="31" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/datapipeline.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="507">
-              <caret line="139" column="42" selection-start-line="139" selection-start-column="42" selection-end-line="139" selection-end-column="42" />
+            <state relative-caret-position="255">
+              <caret line="35" selection-start-line="35" selection-end-line="35" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -46,8 +61,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/densenet.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="338">
-              <caret line="103" column="48" selection-start-line="103" selection-start-column="48" selection-end-line="103" selection-end-column="48" />
+            <state relative-caret-position="307">
+              <caret line="126" column="35" selection-start-line="126" selection-start-column="35" selection-end-line="126" selection-end-column="35" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
@@ -56,42 +71,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/VGG.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="17">
-              <caret line="49" column="32" selection-start-line="49" selection-start-column="32" selection-end-line="49" selection-end-column="32" />
-              <folding>
-                <element signature="e#0#12#0" expanded="true" />
-                <element signature="e#3448#3856#0" />
-                <element signature="e#3920#4350#0" />
-                <element signature="e#4411#4814#0" />
-                <element signature="e#4878#5308#0" />
-                <element signature="e#5369#5772#0" />
-                <element signature="e#5836#6266#0" />
-                <element signature="e#6327#6730#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/resnet.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1170">
-              <caret line="344" column="23" lean-forward="true" selection-start-line="344" selection-start-column="23" selection-end-line="344" selection-end-column="23" />
-              <folding>
-                <element signature="e#1#32#0" expanded="true" />
-                <element signature="e#4091#4270#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/train.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="796">
-              <caret line="321" column="40" lean-forward="true" selection-start-line="321" selection-start-column="40" selection-end-line="321" selection-end-column="40" />
+            <state relative-caret-position="-969">
+              <caret line="309" column="45" selection-start-line="309" selection-start-column="45" selection-end-line="309" selection-end-column="45" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -102,8 +85,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ensemble.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="85">
-              <caret line="5" column="41" lean-forward="true" selection-start-line="5" selection-start-column="41" selection-end-line="5" selection-end-column="41" />
+            <state relative-caret-position="357">
+              <caret line="39" column="17" selection-start-line="39" selection-start-column="17" selection-end-line="39" selection-end-column="18" />
               <folding>
                 <element signature="e#0#21#0" expanded="true" />
               </folding>
@@ -114,8 +97,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Settings.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2805">
-              <caret line="2152" column="28" lean-forward="true" selection-start-line="2152" selection-start-column="28" selection-end-line="2152" selection-end-column="28" />
+            <state relative-caret-position="620">
+              <caret line="2323" column="13" selection-start-line="2323" selection-start-column="13" selection-end-line="2323" selection-end-column="13" />
               <folding>
                 <element signature="e#17#3445#0" />
                 <element signature="e#3451#7156#0" />
@@ -129,6 +112,10 @@
                 <element signature="e#40641#43278#0" />
                 <element signature="e#43284#46513#0" />
                 <element signature="e#46519#49873#0" />
+                <element signature="e#49879#57624#0" />
+                <element signature="e#57630#60497#0" />
+                <element signature="e#60503#63021#0" />
+                <element signature="e#64701#65504#0" />
               </folding>
             </state>
           </provider>
@@ -163,22 +150,23 @@
         <option value="$PROJECT_DIR$/Settings2.json" />
         <option value="$PROJECT_DIR$/main_res.py" />
         <option value="$PROJECT_DIR$/utils.py" />
-        <option value="$PROJECT_DIR$/densenet.py" />
-        <option value="$PROJECT_DIR$/resnet.py" />
         <option value="$PROJECT_DIR$/inception.py" />
+        <option value="$PROJECT_DIR$/shufflenet.py" />
+        <option value="$PROJECT_DIR$/VGG.py" />
+        <option value="$PROJECT_DIR$/resnet.py" />
+        <option value="$PROJECT_DIR$/train.py" />
+        <option value="$PROJECT_DIR$/ensemble.py" />
+        <option value="$PROJECT_DIR$/densenet.py" />
         <option value="$PROJECT_DIR$/datapipeline.py" />
         <option value="$PROJECT_DIR$/Settings.json" />
-        <option value="$PROJECT_DIR$/VGG.py" />
-        <option value="$PROJECT_DIR$/ensemble.py" />
         <option value="$PROJECT_DIR$/main.py" />
-        <option value="$PROJECT_DIR$/train.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="2210" />
+    <option name="x" value="-7" />
     <option name="width" value="974" />
-    <option name="height" value="821" />
+    <option name="height" value="1047" />
   </component>
   <component name="ProjectLevelVcsManager">
     <OptionsSetting value="false" id="Update" />
@@ -188,6 +176,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -195,11 +184,29 @@
               <item name="FYP" type="b2602c69:ProjectViewProjectNode" />
               <item name="FYP" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="FYP" type="b2602c69:ProjectViewProjectNode" />
+              <item name="FYP" type="462c0819:PsiDirectoryNode" />
+              <item name="plots" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="FYP" type="b2602c69:ProjectViewProjectNode" />
+              <item name="FYP" type="462c0819:PsiDirectoryNode" />
+              <item name="study1_positive" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="FYP" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+            </path>
+            <path>
+              <item name="FYP" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; Python 3.7 (test1) &gt;" type="70bed36:NamedLibraryElementNode" />
+            </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -208,6 +215,9 @@
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\TEST\Documents\GitHub\FYP" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\TEST\Documents\GitHub\FYP" />
     </key>
@@ -484,7 +494,14 @@
       <option name="project" value="LOCAL" />
       <updated>1571110011404</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="trained with vgg">
+      <created>1571232113919</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1571232113919</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TodoView">
@@ -497,15 +514,15 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1912" y="0" width="1936" height="1056" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.07165437" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.09220232" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.2112676" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.33586133" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -533,7 +550,8 @@
     <MESSAGE value="resnet working" />
     <MESSAGE value="resnet results, might be overfitting" />
     <MESSAGE value="variations of resnet tested,&#10;wideresnet is best&#10;ensemble done" />
-    <option name="LAST_COMMIT_MESSAGE" value="variations of resnet tested,&#10;wideresnet is best&#10;ensemble done" />
+    <MESSAGE value="trained with vgg" />
+    <option name="LAST_COMMIT_MESSAGE" value="trained with vgg" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://D:/Desktop/FYP/datapipeline.py">
@@ -554,16 +572,6 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Settings2.json" />
     <entry file="file://$PROJECT_DIR$/main_res.py" />
-    <entry file="file://$PROJECT_DIR$/utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="51">
-          <caret line="3" selection-start-line="3" selection-end-line="3" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/Anaconda3/envs/test1/Lib/site-packages/torch/nn/modules/conv.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1798">
@@ -581,27 +589,78 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/VGG.py">
+    <entry file="file://$PROJECT_DIR$/shufflenet.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="49" column="32" selection-start-line="49" selection-start-column="32" selection-end-line="49" selection-end-column="32" />
+        <state relative-caret-position="174">
+          <caret line="168" column="16" lean-forward="true" selection-start-line="168" selection-start-column="16" selection-end-line="168" selection-end-column="16" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
-            <element signature="e#3448#3856#0" />
-            <element signature="e#3920#4350#0" />
-            <element signature="e#4411#4814#0" />
-            <element signature="e#4878#5308#0" />
-            <element signature="e#5369#5772#0" />
-            <element signature="e#5836#6266#0" />
-            <element signature="e#6327#6730#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/VGG.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="748">
+          <caret line="46" column="16" selection-start-line="46" selection-start-column="16" selection-end-line="46" selection-end-column="16" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resnet.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="528">
+          <caret line="357" column="16" selection-start-line="357" selection-start-column="16" selection-end-line="357" selection-end-column="16" />
+          <folding>
+            <element signature="e#1#32#0" expanded="true" />
+            <element signature="e#4091#4270#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/train.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-969">
+          <caret line="309" column="45" selection-start-line="309" selection-start-column="45" selection-end-line="309" selection-end-column="45" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ensemble.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="357">
+          <caret line="39" column="17" selection-start-line="39" selection-start-column="17" selection-end-line="39" selection-end-column="18" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" selection-start-line="2" selection-end-line="2" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/densenet.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="307">
+          <caret line="126" column="35" selection-start-line="126" selection-start-column="35" selection-end-line="126" selection-end-column="35" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Settings.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2805">
-          <caret line="2152" column="28" lean-forward="true" selection-start-line="2152" selection-start-column="28" selection-end-line="2152" selection-end-column="28" />
+        <state relative-caret-position="620">
+          <caret line="2323" column="13" selection-start-line="2323" selection-start-column="13" selection-end-line="2323" selection-end-column="13" />
           <folding>
             <element signature="e#17#3445#0" />
             <element signature="e#3451#7156#0" />
@@ -615,67 +674,30 @@
             <element signature="e#40641#43278#0" />
             <element signature="e#43284#46513#0" />
             <element signature="e#46519#49873#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ensemble.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="85">
-          <caret line="5" column="41" lean-forward="true" selection-start-line="5" selection-start-column="41" selection-end-line="5" selection-end-column="41" />
-          <folding>
-            <element signature="e#0#21#0" expanded="true" />
+            <element signature="e#49879#57624#0" />
+            <element signature="e#57630#60497#0" />
+            <element signature="e#60503#63021#0" />
+            <element signature="e#64701#65504#0" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/datapipeline.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="507">
-          <caret line="139" column="42" selection-start-line="139" selection-start-column="42" selection-end-line="139" selection-end-column="42" />
+        <state relative-caret-position="255">
+          <caret line="35" selection-start-line="35" selection-end-line="35" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/densenet.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="338">
-          <caret line="103" column="48" selection-start-line="103" selection-start-column="48" selection-end-line="103" selection-end-column="48" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="31">
-          <caret line="86" column="35" lean-forward="true" selection-start-line="86" selection-start-column="35" selection-end-line="86" selection-end-column="35" />
+        <state relative-caret-position="289">
+          <caret line="134" column="38" lean-forward="true" selection-start-line="134" selection-start-column="38" selection-end-line="134" selection-end-column="38" />
           <folding>
             <element signature="e#0#21#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resnet.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1170">
-          <caret line="344" column="23" lean-forward="true" selection-start-line="344" selection-start-column="23" selection-end-line="344" selection-end-column="23" />
-          <folding>
-            <element signature="e#1#32#0" expanded="true" />
-            <element signature="e#4091#4270#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/train.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="796">
-          <caret line="321" column="40" lean-forward="true" selection-start-line="321" selection-start-column="40" selection-end-line="321" selection-end-column="40" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
           </folding>
         </state>
       </provider>

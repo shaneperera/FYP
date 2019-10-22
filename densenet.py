@@ -126,8 +126,10 @@ class DenseNet(nn.Module):
         # Passes the input to the output
         features = self.features(x)
         out = F.relu(features, inplace=True)
-        out = F.avg_pool2d(out, kernel_size=7, stride=1).view(features.size(0), -1)
-        # Change the final fully connected layer to Sigmoid (Probability function)
-        out = F.torch.sigmoid(self.fc(out))
-        return out
+        out2 = F.avg_pool2d(out, kernel_size=7, stride=1).view(features.size(0), -1)
+        # # Change the final fully connected layer to Sigmoid (Probability function)
+        out_fc = self.fc(out2)
+        out = torch.sigmoid(out_fc)
+        # return out
+        return out, features, out2
 

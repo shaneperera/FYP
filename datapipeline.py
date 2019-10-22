@@ -36,7 +36,7 @@ def get_study_data(study_type):
 
         # Locate the MURA dataset
         # Include directory extension --> Special type of string formatting
-        base_directory = 'D:\Desktop\FYP\MURA-v1.1/%s/%s/' % (category, study_type)
+        base_directory = 'D:\Desktop\FYP\MURA-vtest/%s/%s/' % (category, study_type)
 
         # List of all the patients inside the study level
         # os.walk --> Generates file names in the directory --> When you enter XR_ELBOW --> Will print directory first
@@ -130,14 +130,14 @@ def get_dataloaders(data, batch_size):
 
     data_transforms = {
         'train': transforms.Compose([
-            transforms.Resize((244, 244)),
+            transforms.Resize((224, 224)),
             transforms.RandomHorizontalFlip(),
-            transforms.RandomRotation(10),
+            transforms.RandomRotation(15),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
         'valid': transforms.Compose([
-            transforms.Resize((244, 244)),
+            transforms.Resize((224, 224)),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
