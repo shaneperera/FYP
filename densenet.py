@@ -131,5 +131,5 @@ class DenseNet(nn.Module):
         out_fc = self.fc(out2)
         out = torch.sigmoid(out_fc)
         # return out
-        return out, features, out2
+        return out
 

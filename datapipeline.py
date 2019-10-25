@@ -36,7 +36,7 @@ def get_study_data(study_type):
 
         # Locate the MURA dataset
         # Include directory extension --> Special type of string formatting
-        base_directory = 'D:\Desktop\FYP\MURA-vtest/%s/%s/' % (category, study_type)
+        base_directory = 'D:\Desktop\FYP\MURA-v1.1/%s/%s/' % (category, study_type)
 
         # List of all the patients inside the study level
         # os.walk --> Generates file names in the directory --> When you enter XR_ELBOW --> Will print directory first

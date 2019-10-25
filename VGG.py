@@ -141,7 +141,11 @@ def vgg16(pretrained=False, progress=True, **kwargs):
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _vgg('vgg16', 'D', False, pretrained, progress, **kwargs)
+    kwargs['init_weights'] = False
+    model = VGG(make_layers(cfgs['D']), **kwargs)
+    model.load_state_dict(model_zoo.load_url('https://download.pytorch.org/models/vgg16-397923af.pth'),
+                          strict=False)
+    return model
 
 
 def vgg16_bn(pretrained=False, progress=True, **kwargs):
@@ -151,7 +155,11 @@ def vgg16_bn(pretrained=False, progress=True, **kwargs):
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _vgg('vgg16_bn', 'D', True, pretrained, progress, **kwargs)
+    kwargs['init_weights'] = False
+    model = VGG(make_layers(cfgs['D'], batch_norm=True), **kwargs)
+    model.load_state_dict(model_zoo.load_url('https://download.pytorch.org/models/vgg16_bn-6c64b313.pth'),
+                          strict=False)
+    return model
 
 
 def vgg19(pretrained=False, progress=True, **kwargs):
@@ -172,7 +180,7 @@ def vgg19_bn(pretrained=False, progress=True, **kwargs):
         progress (bool): If True, displays a progress bar of the download to stderr
     """
     kwargs['init_weights'] = False
-    model = VGG(make_layers(cfgs['E'], batch_norm='True'), **kwargs)
+    model = VGG(make_layers(cfgs['E'], batch_norm=True), **kwargs)
     model.load_state_dict(model_zoo.load_url('https://download.pytorch.org/models/vgg19_bn-c79401a0.pth'),
                           strict=False)
     return model

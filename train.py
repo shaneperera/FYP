@@ -5,6 +5,7 @@ from torchnet import meter
 from torch.autograd import Variable
 from utils import plot_training
 import json
+import statistics
 
 
 data_cat = ['train', 'valid']  # data categories
@@ -12,7 +13,7 @@ data_cat = ['train', 'valid']  # data categories
 with open('Settings.json', 'r') as f:
     settings = json.load(f)
 
-def train_model(model, criterion, optimizer, dataloaders, scheduler,
+def train_model(model, criterion, optimizer, dataloaders,
                 dataset_sizes, num_epochs, costs, accs, num_ID, modeltype):
     # In order to determine how long each epoch takes to travel in the network,
     # measure the time since the beginning of the first epoch
@@ -226,7 +227,7 @@ def train_model(model, criterion, optimizer, dataloaders, scheduler,
 
             # deep copy the model
             if phase == 'valid':
-                scheduler.step(epoch_loss)
+                # scheduler.step(epoch_loss)
                 # If the accuracy of current epoch is better than previous epoch, make a replica of the weights
                 print("epoch acc:",epoch_acc)
                 print("max:", max(accs[phase]))
@@ -333,6 +334,51 @@ def test_model(model, criterion, dataloaders,dataset_sizes):
     epoch_acc = running_corrects.item() / dataset_sizes[phase]
 
     return epoch_acc, epoch_loss
+
+def test_ensemble(model, criterion, dataloaders,dataset_sizes):
+    running_corrects = 0
+    phase = "valid"
+    for i, data in enumerate(dataloaders[phase]):
+        # Print the iteration ( '\r' --> Overwrite the existing iteration each time)
+        print(i, end='\r')
+
+        for j, study in enumerate(data[0]):
+            inputs = study
+            # Convert the label (0 or 1) to an integer Tensor
+            labels = data[1][j].type(torch.Tensor)
+            with torch.no_grad():
+                inputs = Variable(inputs.cuda())
+                labels = Variable(labels.cuda())
+                # Forward propagation (find output)
+                # When you feed the images into the model, it will yield a probability of the classification
+                x1,x2,x3 = model(inputs)
+
+                # Find the average of the probability of the classification
+                # We comment it out because we need tensor for torch.max operation
+                x1 = torch.mean(x1)
+                x2 = torch.mean(x2)
+                x3 = torch.mean(x3)
+
+
+        preds1 = (x1 > 0.5).type(torch.cuda.FloatTensor)
+        preds2 = (x2 > 0.5).type(torch.cuda.FloatTensor)
+        preds3 = (x3 > 0.5).type(torch.cuda.FloatTensor)
+        print([preds1,preds2,preds3])
+
+        preds = statistics.mode([preds1.item(),preds2.item(),preds3.item()])
+        running_corrects += (preds==labels.item())
+
+
+
+
+
+
+
+    # Calculate the loss and accuracy
+
+    epoch_acc = running_corrects/ dataset_sizes[phase]
+
+    return epoch_acc
 
 def train_ensemble(model,ensemble,dataloaders,criterion, optimizer, scheduler, dataset_sizes,num_epochs,costs, accs,num_ID):
     since = time.time()

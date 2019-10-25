@@ -2,12 +2,12 @@ import torch.nn as nn
 import torch.optim
 from densenet import densenet169
 from utils import n_p, get_count
-from train import train_model, test_model,train_ensemble
+from train import train_model, test_model,train_ensemble,test_ensemble
 from datapipeline import get_study_data, get_dataloaders
 import torch.utils.model_zoo as model_zoo
 from resnet import resnet101,resnet152,resnext101,wide_resnet101_2
 from inception import inception_v3
-from VGG import vgg19_bn
+from VGG import vgg19_bn,vgg16,vgg16_bn
 import json
 from ensemble import Ensemble,Ensemble2,Ensemble3
 from shufflenet import shufflenet_v2_x1_0
@@ -25,8 +25,8 @@ if __name__ == '__main__':
         settings = json.load(f)
 
     #selecting run in JSON file
-    num_ID = 4
-    test = 1
+    num_ID = 19
+    test = 0
 
     #load variables from JSON file
     batch_size = settings['run'][num_ID]['bs']
@@ -84,166 +84,78 @@ if __name__ == '__main__':
 
 
     if test:
-        # model = Ensemble("models/best_model_4.pth","models/best_model_res_12.pth","models/best_model_res_14.pth")
-        # model.cuda()
-        # criterion = Loss(Wt1, Wt0)
-        # test_acc, test_loss = test_model(model,criterion,dataloaders,dataset_sizes)
-        # # test_acc= test_model(model, criterion, dataloaders, dataset_sizes)
-        # print(test_acc,test_loss)
-        # print(test_acc)
-        model = densenet169(pretrained = True,droprate=droprate)
-        if latest_model_path != "":
-            model.load_state_dict(torch.load(latest_model_path))
-
+        model = Ensemble("models/best_model_4.pth","models/best_model_res_12.pth","models/best_model_res_14.pth")
         model.cuda()
-        model.eval()
-        img,_ = (next(iter(dataloaders['valid'])))
-        inputs = Variable(img[0].cuda())
-        pred,features,out_fc = model(inputs)
-        out_fc = model.fc.weight
-        print(out_fc.size())
-        out_fc = torch.squeeze(out_fc)
-
-
-        total = torch.sum(out_fc)
-        out_fc = torch.div(out_fc,total)
-        # out_fc = out_fc.permute(1,0) # might be bad
-        # out_fc = torch.div(out_fc,total)
-        # out_fc = out_fc.permute(1,0)
-        print(out_fc.size())
-        # features = features.permute(0,3,2,1)
-        # out_fc = torch.unsqueeze(out_fc,2)
-        # out_fc = torch.unsqueeze(out_fc,3)
+        criterion = Loss(Wt1, Wt0)
+        test_acc = test_ensemble(model,criterion,dataloaders,dataset_sizes)
+        # test_acc= test_model(model, criterion, dataloaders, dataset_sizes)
+        # print(test_acc,test_loss)
+        print(test_acc)
+        # model = densenet169(pretrained = True,droprate=droprate)
+        # if latest_model_path != "":
+        #     model.load_state_dict(torch.load(latest_model_path))
+        #
+        # model.cuda()
+        # model.eval()
+        # img,_ = (next(iter(dataloaders['valid'])))
+        # inputs = Variable(img[0].cuda())
+        # pred,features,out_fc = model(inputs)
+        # out_fc = model.fc.weight
         # print(out_fc.size())
-        heatmap = []
-        # torch.mul(out_fc, features)
-        # for i in range(img[0].size()[0]):
-        for j in range(1664):
-                features[:,j,:,:] *= out_fc[j]
-        #      heatmap.append(torch.mul(out_fc,features[i]))
-        # heatmap = torch.mul(out_fc, features)
-        print(features.size())
-        heatmap = torch.mean(features[1],dim=0)
-        print('2: ',heatmap.size())
-        # heatmap = features
-        # heatmap[0] = torch.mean(features[0],2)
-        # heatmap[0].permute(1,0)
-        # print(heatmap[0])
-        # plt.imshow(heatmap[0].cpu().detach().numpy())
-        # plt.show()
-        # plt.imshow(heatmap[1].cpu().detach().numpy())
-        # plt.show()
-        # plt.imshow(heatmap[2].cpu().detach().numpy())
-        # plt.show()
-        # print(img[0][0])
-        # plt.imshow(img[0][0].permute(1,2,0))
-        # plt.show()
-
-
-        # full_img = cv2.imread('D:/Desktop/FYP/MURA-vtest/valid/XR_WRIST/patient00006/study1_positive/image1')
-        full_img = cv2.imread('study1_positive/image2.png')
-        heatmap = heatmap.cpu().detach().numpy()
-        heatmap = tuple(map(tuple,heatmap))
-        heatmap = np.array(heatmap)
-
-        print(np.min(heatmap))
-        heatmap = heatmap-np.min(heatmap)
-        heatmap = heatmap/np.max(heatmap)
-
+        # out_fc = torch.squeeze(out_fc)
+        #
+        #
+        # total = torch.sum(out_fc)
+        # out_fc = torch.div(out_fc,total)
+        # # out_fc = out_fc.permute(1,0) # might be bad
+        # # out_fc = torch.div(out_fc,total)
+        # # out_fc = out_fc.permute(1,0)
+        # print(out_fc.size())
+        # # features = features.permute(0,3,2,1)
+        # # out_fc = torch.unsqueeze(out_fc,2)
+        # # out_fc = torch.unsqueeze(out_fc,3)
+        # # print(out_fc.size())
+        # heatmap = []
+        # # torch.mul(out_fc, features)
+        # # for i in range(img[0].size()[0]):
+        # for j in range(1664):
+        #         features[:,j,:,:] *= out_fc[j]
+        # #      heatmap.append(torch.mul(out_fc,features[i]))
+        # # heatmap = torch.mul(out_fc, features)
+        # print(features.size())
+        # heatmap = torch.mean(features[2],dim=0)
+        # print('2: ',heatmap.size())
+        #
+        #
+        # # full_img = cv2.imread('D:/Desktop/FYP/MURA-vtest/valid/XR_WRIST/patient00006/study1_positive/image1')
+        # full_img = cv2.imread('study1_positive/image3.png')
         # heatmap = heatmap.cpu().detach().numpy()
-        # heatmap = heatmap-np.min(heatmap,0)
-        # heatmap = heatmap/np.max(heatmap,0)
+        # heatmap = tuple(map(tuple,heatmap))
+        # heatmap = np.array(heatmap)
+        #
+        # print(np.min(heatmap))
+        # heatmap = heatmap-np.min(heatmap)
+        # heatmap = heatmap/np.max(heatmap)
+        #
+        # # heatmap = heatmap.cpu().detach().numpy()
+        # # heatmap = heatmap-np.min(heatmap,0)
+        # # heatmap = heatmap/np.max(heatmap,0)
+        #
+        # plt.imshow(heatmap)
+        # plt.show()
+        #
+        # # (full_img.shape[1], full_img.shape[0])
+        # heatmap2 = cv2.resize(heatmap,(full_img.shape[1], full_img.shape[0]))
+        #
+        # heatmap2 = np.uint8(255*heatmap2)
+        #
+        # heatmap2 = cv2.applyColorMap(heatmap2, cv2.COLORMAP_JET)
+        #
+        # superimposed_img = heatmap2 * 0.4 + full_img
+        # cv2.imwrite('./map.jpg', superimposed_img)
 
-        plt.imshow(heatmap)
-        plt.show()
-
-        # (full_img.shape[1], full_img.shape[0])
-        heatmap2 = cv2.resize(heatmap,(full_img.shape[1], full_img.shape[0]))
-
-        heatmap2 = np.uint8(255*heatmap2)
-
-        heatmap2 = cv2.applyColorMap(heatmap2, cv2.COLORMAP_JET)
-
-        superimposed_img = heatmap2 * 0.4 + full_img
-        cv2.imwrite('./map.jpg', superimposed_img)
 
 
-    # Trans = transforms.Compose([
-    #         transforms.Resize((224, 224)),
-    #         transforms.ToTensor(),
-    #         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    # ])
-    #
-    # def generate_grad_cam(net, ori_image):
-    #     """
-    #     :param net: deep learning network(ResNet DataParallel object)
-    #     :param ori_image: the original image
-    #     :return: gradient class activation map
-    #     """
-    #     input_image = Trans(ori_image)
-    #
-    #     feature = None
-    #     gradient = None
-    #
-    #     def func_f(module, input, output):
-    #         nonlocal feature
-    #         feature = output.data.cpu().numpy()
-    #
-    #     def func_b(module, grad_in, grad_out):
-    #         nonlocal gradient
-    #         gradient = grad_out[0].data.cpu().numpy()
-    #
-    #     net._modules.get('layer4').register_forward_hook(func_f)
-    #     net.modules.layer4.register_backward_hook(func_b)
-    #
-    #     out = net(input_image.unsqueeze(0))
-    #
-    #     pred = (out.data > 0.5)
-    #
-    #     net.zero_grad()
-    #
-    #     loss = nn.functional.binary_cross_entropy(out, pred.float())
-    #     loss.backward()
-    #
-    #     feature = np.squeeze(feature, axis=0)
-    #     gradient = np.squeeze(gradient, axis=0)
-    #
-    #     weights = np.mean(gradient, axis=(1, 2), keepdims=True)
-    #
-    #     cam = np.sum(weights * feature, axis=0)
-    #
-    #     cam = cv2.resize(cam, (224, 224))
-    #     cam = (cam - np.min(cam)) / (np.max(cam) - np.min(cam))
-    #     cam = 1.0 - cam
-    #     cam = np.uint8(cam * 255)
-    #
-    #     return cam
-    #
-    #
-    # def localize(cam_feature, ori_image):
-    #     """
-    #     localize the abnormality region using grad_cam feature
-    #     :param cam_feature: cam_feature by generate_grad_cam
-    #     :param ori_image: the original image
-    #     :return: img with heatmap, the abnormality region is highlighted
-    #     """
-    #     ori_image = np.array(ori_image)
-    #     activation_heatmap = cv2.applyColorMap(cam_feature, cv2.COLORMAP_JET)
-    #     activation_heatmap = cv2.resize(activation_heatmap, (ori_image.shape[1], ori_image.shape[0]))
-    #     img_with_heatmap = 0.15 * np.float32(activation_heatmap) + 0.85 * np.float32(ori_image)
-    #     img_with_heatmap = img_with_heatmap / np.max(img_with_heatmap) * 255
-    #     return img_with_heatmap
-
-    # if test:
-    #     model = resnet101()
-    #     num_ftrs = model.fc.in_features
-    #     model.fc = nn.Linear(num_ftrs, 1)
-    #     if latest_model_path != "":
-    #         model.load_state_dict(torch.load(latest_model_path))
-    #     model.cuda()
-    #     model.eval()
-    #
-    #     CAM = generate_grad_cam(model,Image.open('study1_positive/image1.png'))
 
     else:
         if modeltype == "dense":
@@ -256,7 +168,7 @@ if __name__ == '__main__':
             model.AuxLogits.fc = nn.Linear(768, 1)
             model.fc = nn.Linear(2048, 1)
         elif modeltype == "vgg":
-            model = vgg19_bn(pretrained=True)
+            model = vgg16_bn(pretrained=True)
             model.classifier[6] = nn.Linear(4096, 1)
         elif modeltype == "ensemble":
             model = Ensemble3()
@@ -278,9 +190,9 @@ if __name__ == '__main__':
 
         criterion = Loss(Wt1, Wt0)
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=1, verbose=True)
+        # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=1, verbose=True)
 
         # Train model
-        model = train_model(model, criterion, optimizer, dataloaders, scheduler, dataset_sizes, num_epochs=epochs-current_epoch, costs= costs, accs= accs, num_ID = num_ID,modeltype = modeltype)
+        model = train_model(model, criterion, optimizer, dataloaders, dataset_sizes, num_epochs=epochs-current_epoch, costs= costs, accs= accs, num_ID = num_ID,modeltype = modeltype)
         # model = train_ensemble(model,ensemble,dataloaders,criterion,optimizer,scheduler,dataset_sizes,num_epochs = epochs-current_epoch,costs=costs, accs=accs,num_ID= num_ID)
 
